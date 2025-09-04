@@ -1,0 +1,7 @@
+{
+  "name": "AI Bill Analyzer",
+  "description": "Upload or capture a utility bill to have AI extract and visualize key information. Supports Google Gemini, Ollama, and OpenAI for flexible analysis.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
