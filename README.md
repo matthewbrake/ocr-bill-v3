@@ -24,6 +24,7 @@ This project is built with React, TypeScript, and Tailwind CSS, and supports mul
 | Frontend   | React + TypeScript| For a robust, type-safe, and component-based UI.              |
 | Backend    | Node.js + Express | For an optional, simple, and effective persistent storage solution. |
 | Styling    | Tailwind CSS      | For rapid, consistent, and responsive UI design.              |
+| Bundler    | esbuild           | For extremely fast frontend code compilation.                 |
 | Logging    | Winston           | For robust, file-based server-side logging.                   |
 | AI SDK     | `@google/genai`   | Official, modern SDK for the Google Gemini API.               |
 | Charting   | Recharts          | Composable and easy-to-use charting library for React.        |
@@ -60,17 +61,7 @@ If you are using a development server like Vite or running the Node.js server, t
 
 ## 5. How to Run the Application
 
-You can run the app in multiple ways, from a simple static page to a full production-ready server.
-
-### 5.1. Method 1: Simple Static App (Browser-Only Mode)
-
-1.  **Launch**: Open the `index.html` file directly in your browser from your file system.
-2.  **Configure**: Click the **gear icon** (⚙️) in the top-right corner. You **must** enter your AI provider API keys manually in the settings panel.
-3.  **Use**: Your analysis history will be stored in your browser's local storage and will be cleared if you clear your browser data.
-
-### 5.2. Method 2: With Node.js Server (Recommended)
-
-This method provides the complete experience, including server-side storage for your analysis history, uploaded bill images, exported CSVs, and server logs.
+This application includes a Node.js server and a frontend build process. The following commands handle everything for you.
 
 **Step 1: Install Dependencies (One-Time Setup)**
 Open a terminal in the project's root directory and run this command.
@@ -81,20 +72,20 @@ npm install
 
 **Step 2: Choose Your Mode**
 
-**A) For Development (Easy & Recommended for testing)**
-This mode uses `nodemon` to automatically restart the server when you make code changes.
+**A) For Development (Easy & Recommended)**
+This single command starts both the frontend compiler (which watches for your changes) and the backend server. The server will also automatically restart if you change its code. This is the only command you need for development.
 
 ```bash
-npm run server
+npm run dev
 ```
 
-The server will start, and you will see a message like `AI Bill Analyzer server running at http://localhost:4000`. Keep this terminal open while you use the app. To run on a different port, either set the `PORT` variable in your `.env` file (see section 4.2) or run the command like this: `PORT=8080 npm run server`.
+The server will start, and you will see a message like `AI Bill Analyzer server running at http://localhost:4000`. Keep this terminal open while you use the app. To run on a different port, set the `PORT` variable in your `.env` file or run: `PORT=8080 npm run dev`.
 
 **B) For Production (Stable & Performant)**
-This two-step process first compiles the server code into optimized JavaScript and then runs it.
+This two-step process first compiles all the frontend and backend code into an optimized `dist/` folder and then runs it.
 
 ```bash
-# 1. Build the server code (only needed once, or after making changes)
+# 1. Build the application for production
 npm run build
 
 # 2. Start the production server
@@ -103,14 +94,6 @@ npm start
 The same `server running...` message will appear. You can also specify the port here: `PORT=8080 npm start`.
 
 **Step 3: Launch the App**
-Open your web browser and navigate to the URL from the terminal (e.g., `http://localhost:4000` or the custom port you set).
+Open your web browser and navigate to the URL from the terminal (e.g., `http://localhost:4000`).
     
 **Step 4: Use the App**: Your analysis history will now be saved on the server in `history.json`. Images will be stored in the `uploads/` folder, exported CSVs in the `csv/` folder, and all server logs will be in the `logs/` folder.
-
-## 6. How to Use the Application
-
-1.  **Upload a Bill**: On the welcome screen, drag and drop a bill image (PNG, JPG, WEBP) into the upload area. Alternatively, click to select a file or use the camera.
-2.  **Analyze**: After selecting an image, a preview is shown. Click **"✨ Analyze Bill"** to start.
-3.  **Review and Edit**: The AI-extracted data is displayed. Fields with low-confidence scores are highlighted with a yellow icon. Any chart bars the AI was uncertain about are colored yellow. You can click any field to edit it, including the data in the usage charts via the "Edit Chart" button.
-4.  **Export or Submit**: Click **"Save & Export CSV"** to save the data as a CSV file on the server. Or, click **"Submit Form"** to send it to a Formspree endpoint (if configured).
-5.  **View History**: Click the **clock icon** (🕒) to view past analyses. You can load or clear results from this panel.

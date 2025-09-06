@@ -1,0 +1,18 @@
+{
+  "watch": [
+    "server.ts",
+    "logger.ts",
+    "src/**/*.ts",
+    "types/**/*.ts"
+  ],
+  "ext": "ts,json",
+  "ignore": [
+    "client.js*",
+    "dist/",
+    "node_modules/",
+    "uploads/",
+    "csv/",
+    "logs/"
+  ],
+  "exec": "node --loader ts-node/esm server.ts"
+}

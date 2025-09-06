@@ -12,11 +12,11 @@ This guide provides step-by-step instructions to set up and run the AI Bill Anal
 
 ### Step 1: Install Dependencies
 
-The project's backend server relies on several Node.js packages (like Express and Winston). These are listed in the `package.json` file.
+The project relies on several Node.js packages for both the backend server and the frontend build process. These are listed in the `package.json` file.
 
 1.  Open your terminal or command prompt.
 2.  Navigate to the root directory of the project (the folder containing `package.json`).
-3.  Run the following command. This will read `package.json` and download all the necessary packages into a `node_modules` folder. You only need to do this once.
+3.  Run the following command. This will download all the necessary packages into a `node_modules` folder. You only need to do this once.
 
     ```bash
     npm install
@@ -42,28 +42,27 @@ The application can be configured with API keys and other settings.
     # Optional: To change the server port from the default of 4000
     PORT=4000
     ```
-
-    **Note**: Using a `.env` file requires a build tool like Vite to inject the `VITE_` variables into the frontend code. If you are running the `index.html` file directly, these will not be read, and you must enter the keys manually in the application's settings panel. The `PORT` variable is read by the Node.js server.
+    **Note**: The server only reads the `PORT` variable. The `VITE_` variables are intended for frontend build tools. Since this project uses a simple esbuild script, you will need to enter API keys in the settings UI unless you modify the build process further.
 
 ### Step 3: Run the Application
 
-The application includes a Node.js server that provides the best experience, including persistent history, file saving, and logging.
+The application is now managed by a set of simple npm scripts.
 
-**Option A: Development Mode**
+**Option A: Development Mode (Recommended)**
 
-This mode is best for testing and making code changes, as the server will restart automatically.
+This mode is best for testing and making code changes. It starts a file watcher for the frontend that automatically rebuilds the app when you save a file, and it starts the backend server with `nodemon`, which automatically restarts it when you change server code.
 
 1.  In your terminal, from the project's root directory, run:
     ```bash
-    npm run server
+    npm run dev
     ```
-2.  You will see a confirmation message: `AI Bill Analyzer server running at http://localhost:4000`.
+2.  You will see confirmation messages from both the frontend bundler and the backend server. The server will be running at `http://localhost:4000` by default.
 
 **Option B: Production Mode**
 
 This is the recommended way to run the app for stable, long-term use.
 
-1.  First, build the server code. This compiles the TypeScript into optimized JavaScript. You only need to do this once, or after you change the server code.
+1.  First, build the application. This compiles the frontend and backend TypeScript into optimized JavaScript in a `dist/` folder.
     ```bash
     npm run build
     ```
@@ -71,7 +70,7 @@ This is the recommended way to run the app for stable, long-term use.
     ```bash
     npm start
     ```
-3.  You will see the same `server running...` message.
+3.  You will see a `server running...` message.
 
 ### Step 4: Access the Application
 
