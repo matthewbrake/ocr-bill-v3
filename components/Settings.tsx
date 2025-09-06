@@ -81,12 +81,9 @@ const Settings: React.FC<SettingsProps> = ({ onClose, settings, onSave }) => {
                     </div>
                     
                     {activeTab === AiProvider.GEMINI && (
-                        // FIX: Per coding guidelines, API key is managed via environment variables, not UI.
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1">Google Gemini API Key</label>
-                            <div className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-400">
-                                API Key is configured via an environment variable.
-                            </div>
+                            <label htmlFor="gemini-key" className="block text-sm font-medium text-gray-300 mb-1">Google Gemini API Key</label>
+                            <input id="gemini-key" type="password" value={currentSettings.gemini.apiKey} onChange={(e) => handleSettingChange(AiProvider.GEMINI, 'apiKey', e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Enter your Google Gemini API Key"/>
                         </div>
                     )}
 

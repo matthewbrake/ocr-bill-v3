@@ -1,5 +1,5 @@
-// FIX: Use aliased imports for Express Request and Response to avoid conflicts with global DOM types.
-import express, { Request as ExpressRequest, Response as ExpressResponse } from 'express';
+// FIX: Use direct `express.Request` and `express.Response` types to avoid conflicts with global DOM types.
+import express from 'express';
 import cors from 'cors';
 import fs from 'fs/promises';
 import path from 'path';
@@ -86,7 +86,7 @@ const generateCsvContent = (data: BillData): string => {
 
 // --- API Routes ---
 
-app.get('/api/history', async (req: ExpressRequest, res: ExpressResponse) => {
+app.get('/api/history', async (req: express.Request, res: express.Response) => {
     try {
         const historyData = await fs.readFile(HISTORY_FILE, 'utf-8');
         const history: AnalysisRecord[] = JSON.parse(historyData);
@@ -102,7 +102,7 @@ app.get('/api/history', async (req: ExpressRequest, res: ExpressResponse) => {
     }
 });
 
-app.post('/api/history', async (req: ExpressRequest, res: ExpressResponse) => {
+app.post('/api/history', async (req: express.Request, res: express.Response) => {
     const { data, imageSrc } = req.body;
     if (!data || !imageSrc) {
         return res.status(400).json({ message: 'Missing data or imageSrc' });
@@ -140,7 +140,7 @@ app.post('/api/history', async (req: ExpressRequest, res: ExpressResponse) => {
     }
 });
 
-app.delete('/api/history', async (req: ExpressRequest, res: ExpressResponse) => {
+app.delete('/api/history', async (req: express.Request, res: express.Response) => {
     try {
         await fs.writeFile(HISTORY_FILE, JSON.stringify([]));
         const files = await fs.readdir(UPLOADS_DIR);
@@ -156,7 +156,7 @@ app.delete('/api/history', async (req: ExpressRequest, res: ExpressResponse) => 
     }
 });
 
-app.post('/api/save-analysis', async (req: ExpressRequest, res: ExpressResponse) => {
+app.post('/api/save-analysis', async (req: express.Request, res: express.Response) => {
     const data: BillData = req.body;
     if (!data) {
         return res.status(400).json({ message: 'Missing bill data' });

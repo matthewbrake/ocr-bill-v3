@@ -6,8 +6,8 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "concurrently \"npm:watch:client\" \"npm:server\"",
-    "watch:client": "esbuild index.tsx --bundle --outfile=client.js --watch --sourcemap --log-level=info",
-    "build:client": "esbuild index.tsx --bundle --outfile=client.js --minify",
+    "watch:client": "esbuild index.tsx --bundle --outfile=client.js --watch --sourcemap --log-level=info --external:react --external:react-dom --external:@google/genai --external:recharts",
+    "build:client": "esbuild index.tsx --bundle --outfile=client.js --minify --external:react --external:react-dom --external:@google/genai --external:recharts",
     "build": "tsc && npm run build:client",
     "start": "node dist/server.js",
     "server": "nodemon"

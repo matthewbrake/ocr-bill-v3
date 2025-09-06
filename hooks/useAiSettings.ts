@@ -37,9 +37,8 @@ export const useAiSettings = () => {
 
     const isConfigured = useMemo(() => {
         switch (settings.provider) {
-            // FIX: Per coding guidelines, the Gemini API key must come from `process.env.API_KEY`. The configuration check is updated to reflect this.
             case AiProvider.GEMINI:
-                return !!process.env.API_KEY;
+                return !!settings.gemini.apiKey;
             case AiProvider.OLLAMA:
                 return !!settings.ollama.serverUrl && !!settings.ollama.model;
             case AiProvider.OPENAI:
