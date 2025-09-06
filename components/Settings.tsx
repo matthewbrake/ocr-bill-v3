@@ -105,13 +105,22 @@ const Settings: React.FC<SettingsProps> = ({ onClose, settings, onSave }) => {
                             </div>
                             {ollamaStatus === 'success' && (
                                 <div>
-                                    <label htmlFor="ollama-model" className="block text-sm font-medium text-gray-300 mb-1">Select Multimodal Model</label>
+                                    <label htmlFor="ollama-model" className="block text-sm font-medium text-gray-300 mb-1">Select or Enter Multimodal Model</label>
                                     {ollamaModels.length > 0 ? (
-                                        // FIX: Use AiProvider enum instead of string literal for type safety.
-                                        <select id="ollama-model" value={currentSettings.ollama.model} onChange={(e) => handleSettingChange(AiProvider.OLLAMA, 'model', e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                                            <option value="">-- Select a model --</option>
-                                            {ollamaModels.map(model => <option key={model} value={model}>{model}</option>)}
-                                        </select>
+                                        <>
+                                            <input
+                                                id="ollama-model"
+                                                type="text"
+                                                list="ollama-models-list"
+                                                value={currentSettings.ollama.model}
+                                                onChange={(e) => handleSettingChange(AiProvider.OLLAMA, 'model', e.target.value)}
+                                                className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                                placeholder="e.g., llava"
+                                            />
+                                            <datalist id="ollama-models-list">
+                                                {ollamaModels.map(model => <option key={model} value={model} />)}
+                                            </datalist>
+                                        </>
                                     ) : <p className="text-sm text-yellow-400">No suitable multimodal models found. Try pulling one, e.g., `ollama pull llava`.</p>}
                                 </div>
                             )}

@@ -70,7 +70,7 @@ const BillDataDisplay: React.FC<{ result: BillData, onNewAnalysis: () => void, i
 
     const formspreeId = (typeof import.meta !== 'undefined' && (import.meta as any).env) ? (import.meta as any).env.VITE_FORMSPREE_FORM_ID : '';
     const barColors = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE", "#00C49F"];
-    const LOW_CONFIDENCE_THRESHOLD = 0.6;
+    const LOW_CONFIDENCE_THRESHOLD = 0.75;
     const lowConfidenceColor = "#facc15"; // tailwind yellow-400
 
     useEffect(() => {

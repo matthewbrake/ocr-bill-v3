@@ -12,7 +12,7 @@ This is a detailed set of instructions given to the AI model. It defines its per
 -   Analyze the bill image, even if it's low quality.
 -   Return the output *only* as a raw JSON object, with no extra text.
 -   Estimate values from charts if exact numbers aren't available.
--   Provide a confidence score for each extracted piece of data, including individual points in charts.
+-   Provide a confidence score for each extracted piece of data. This is a key instruction, as these scores are used by the frontend to highlight potentially incorrect data for the user to review and correct.
 
 ### `RESPONSE_JSON_SCHEMA`
 
@@ -36,7 +36,7 @@ The application is designed to be flexible, supporting multiple AI providers. Th
 -   **Model**: User-configurable (e.g., `llava`, `moondream`).
 -   **SDK**: Uses direct `fetch` calls to the Ollama server's REST API.
 -   **Method**: It sends the master prompt as a system message and the image as part of the user message. It requests JSON output by setting `format: "json"`. While this works well, it's slightly less strict than Gemini's schema enforcement.
--   **Discovery**: The `ollamaService.ts` module includes functions to test the connection to the user's Ollama server and fetch a list of available multimodal models, which are then shown in the settings dropdown.
+-   **Discovery**: The `ollamaService.ts` module includes functions to test the connection to the user's Ollama server and fetch a list of available multimodal models, which are then shown in the settings panel.
 
 ### 3. OpenAI
 

@@ -11,12 +11,11 @@ This project is built with React, TypeScript, and Tailwind CSS, and supports mul
 -   **Effortless Data Entry**: "Scan" bills using file upload or your device's camera to eliminate manual data entry.
 -   **Clear Information**: Understand charges, usage, and key dates at a glance with an intuitive UI.
 -   **Track Consumption**: Visualize historical usage data extracted from charts on the bill.
--   **Editable Charts & Low-Confidence Flags**: Correct any AI extraction errors directly. The app automatically highlights individual chart bars the AI was uncertain about, prompting you to verify them.
+-   **Editable Charts & Low-Confidence Flags**: Correct any AI extraction errors directly. The app automatically highlights individual fields and chart bars the AI was uncertain about, prompting you to verify them.
 -   **Persistent History**: An optional Node.js server saves all analysis results, bill images, and exported CSVs so your data is never lost.
 -   **Data Portability**: Export extracted data to a server-side CSV folder for permanent records or submit it to a webhook via Formspree.
 -   **Privacy & Control**: When not using the server, API keys and analysis history are stored locally in the browser.
 -   **Flexible AI Backend**: Easily switch between Google Gemini, a local Ollama instance, or OpenAI.
--   **Interactive & High-Confidence Data**: All extracted fields are editable. Low-confidence extractions are automatically flagged for user review.
 
 ## 3. Technology Stack
 
@@ -38,11 +37,11 @@ This project is built with React, TypeScript, and Tailwind CSS, and supports mul
 
 ### 4.2. Environment Configuration (Optional)
 
-If you are using a development server like Vite, the application can automatically load API keys from an environment file.
+If you are using a development server like Vite or running the Node.js server, the application can automatically load configuration from an environment file.
 
 1.  **Create an environment file**: In the root of the project, create a new file named `.env`.
 
-2.  **Add API Key**: You must add at least one AI provider API key to use the application.
+2.  **Add Configuration**: You must add at least one AI provider API key to use the application.
     -   Open the `.env` file and add your keys. You can get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
     ```env
     # Required for Gemini provider
@@ -51,8 +50,11 @@ If you are using a development server like Vite, the application can automatical
     # Required for OpenAI provider (optional)
     VITE_OPENAI_API_KEY=""
 
-    # Optional: For the "Submit Form" button
+    # Optional: For the "Submit Form" button (sends data to an email via Formspree)
     VITE_FORMSPREE_FORM_ID=""
+    
+    # Optional: To change the backend server port from the default of 4000
+    PORT=4000
     ```
 
 ## 5. How to Run the Application
@@ -83,7 +85,7 @@ In your terminal, run the following command to start the local server:
 npm run server
 ```
 
-The server will start, and you will see a message like `AI Bill Analyzer server running at http://localhost:4000`. Keep this terminal window open while you use the app.
+The server will start, and you will see a message like `AI Bill Analyzer server running at http://localhost:4000`. Keep this terminal window open while you use the app. (Note: If you set a different `PORT` in your `.env` file, the URL will reflect that port).
 
 **Step 3: Launch the App**
 Open your web browser and navigate to the URL from the terminal:
@@ -99,6 +101,6 @@ Open your web browser and navigate to the URL from the terminal:
 
 1.  **Upload a Bill**: On the welcome screen, drag and drop a bill image (PNG, JPG, WEBP) into the upload area. Alternatively, click to select a file or use the camera.
 2.  **Analyze**: After selecting an image, a preview is shown. Click **"✨ Analyze Bill"** to start.
-3.  **Review and Edit**: The AI-extracted data is displayed. Fields with low-confidence scores are highlighted with a yellow icon. Any chart bars the AI was uncertain about are colored yellow. You can click any field to edit it, including the data in the usage charts.
+3.  **Review and Edit**: The AI-extracted data is displayed. Fields with low-confidence scores are highlighted with a yellow icon. Any chart bars the AI was uncertain about are colored yellow. You can click any field to edit it, including the data in the usage charts via the "Edit Chart" button.
 4.  **Export or Submit**: Click **"Save & Export CSV"** to save the data as a CSV file on the server. Or, click **"Submit Form"** to send it to a Formspree endpoint (if configured).
 5.  **View History**: Click the **clock icon** (🕒) to view past analyses. You can load or clear results from this panel.

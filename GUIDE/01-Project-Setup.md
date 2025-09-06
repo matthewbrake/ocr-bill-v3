@@ -24,10 +24,10 @@ The project's backend server relies on several Node.js packages (like Express). 
 
 ### Step 2: Configure Environment Variables (Optional but Recommended)
 
-The application can be configured with API keys for different AI providers.
+The application can be configured with API keys and other settings.
 
 1.  In the root of the project, create a new file named `.env`.
-2.  Add your API keys to this file. You can get a free key for testing from [Google AI Studio](https://aistudio.google.com/app/apikey).
+2.  Add your API keys and desired port to this file. You can get a free key for testing from [Google AI Studio](https://aistudio.google.com/app/apikey).
 
     ```env
     # Required for the Google Gemini provider
@@ -38,9 +38,12 @@ The application can be configured with API keys for different AI providers.
 
     # Optional: For using the "Submit Form" button feature
     VITE_FORMSPREE_FORM_ID="YOUR_FORMSPREE_ID_HERE"
+    
+    # Optional: To change the server port from the default of 4000
+    PORT=4000
     ```
 
-    **Note**: Using a `.env` file requires a build tool like Vite to inject these variables into the frontend code. If you are running the `index.html` file directly, this file will not be read, and you must enter the keys manually in the application's settings panel.
+    **Note**: Using a `.env` file requires a build tool like Vite to inject the `VITE_` variables into the frontend code. If you are running the `index.html` file directly, these will not be read, and you must enter the keys manually in the application's settings panel. The `PORT` variable is read by the Node.js server.
 
 ### Step 3: Run the Application
 
@@ -57,6 +60,7 @@ The application includes a Node.js server that provides the best experience, inc
     ```
     AI Bill Analyzer server running at http://localhost:4000
     ```
+    (The port may be different if you configured it in your `.env` file).
 
 3.  Open your web browser and navigate to the URL provided: **http://localhost:4000**.
 

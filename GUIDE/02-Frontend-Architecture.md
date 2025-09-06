@@ -27,10 +27,10 @@ The frontend source code is organized into several key directories:
 
 -   **`BillDataDisplay.tsx`**: This is the most complex component. It renders the results of the AI analysis.
     -   It displays all extracted data points (account name, due date, etc.).
-    -   It uses the `EditableField` sub-component to allow users to click and edit any value.
-    -   It renders historical usage data using `Recharts` bar charts.
-    -   It includes the "Edit Chart" functionality, which transforms charts into editable tables.
-    -   It handles exporting data to CSV via the backend and submitting it via Formspree.
+    -   It uses the `EditableField` sub-component to allow users to click and edit any value. Any field with a low confidence score from the AI is automatically flagged with a yellow warning icon.
+    -   It renders historical usage data using `Recharts` bar charts. Chart bars corresponding to data points with low confidence scores are colored yellow to prompt user review.
+    -   It includes an "Edit Chart" button, which transforms the chart into an editable table, allowing for precise corrections.
+    -   It handles exporting data to a CSV file (via the backend) and submitting the data to a web service like Formspree (if a `VITE_FORMSPREE_FORM_ID` is provided).
 
 -   **`Settings.tsx`**: A modal component that allows the user to configure the AI provider (Gemini, Ollama, OpenAI) and enter their API keys. It handles testing the connection to an Ollama server and discovering available models.
 

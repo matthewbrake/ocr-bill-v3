@@ -6,9 +6,16 @@ import cors from 'cors';
 import fs from 'fs/promises';
 import path from 'path';
 import type { BillData, LineItem, UsageChart } from './types';
+// FIX: Add support for __dirname in ES modules and import Buffer to resolve TypeScript errors.
+import { fileURLToPath } from 'url';
+import { Buffer } from 'buffer';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = 4000;
+// Allow configuring the port via environment variables, defaulting to 4000
+const port = process.env.PORT || 4000;
 
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const HISTORY_FILE = path.join(__dirname, 'history.json');

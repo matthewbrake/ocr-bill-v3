@@ -16,6 +16,7 @@ The primary purpose of the server is to:
 2.  Provide API endpoints for managing analysis history.
 3.  Store uploaded bill images permanently.
 4.  Save final, user-approved analysis data as CSV files.
+5.  Be configurable, for example, allowing the server port to be changed.
 
 ## File-Based "Database"
 
@@ -49,9 +50,11 @@ The server exposes the following RESTful API endpoints. All endpoints are prefix
 -   **`POST /api/save-analysis`**
     -   **Description**: Receives the final, potentially user-edited `BillData`, generates a CSV file from it, and saves it to the `csv/` folder.
     -   **Request Body**: A JSON object representing the `BillData`.
-    -   **Filename**: The CSV is automatically named using the format `YYYY-MM-DD-HH-MM-SS_account-name_bill-data.csv`.
+    -   **Filename**: The CSV is automatically named using the format `YYYY-MM-DD-HH-MM-SS_account-name_bill-data.csv` (e.g., `2024-05-21-14-30-00_john_doe_bill-data.csv`).
     -   **Response**: A success message indicating the filename of the saved CSV.
 
 ## How to Run
 
 The server is started using the `npm run server` command, which is defined in `package.json`. This command uses `nodemon` to watch for file changes and `ts-node` to execute the `server.ts` TypeScript file directly.
+
+The server runs on port 4000 by default, but this can be changed by setting a `PORT` environment variable (e.g., in a `.env` file).
