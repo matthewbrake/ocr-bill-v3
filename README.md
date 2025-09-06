@@ -11,8 +11,10 @@ This project is built with React, TypeScript, and Tailwind CSS, and supports mul
 -   **Effortless Data Entry**: "Scan" bills using file upload or your device's camera to eliminate manual data entry.
 -   **Clear Information**: Understand charges, usage, and key dates at a glance with an intuitive UI.
 -   **Track Consumption**: Visualize historical usage data extracted from charts on the bill.
--   **Data Portability**: Export extracted data to CSV for personal records or submit it to a webhook via Formspree.
--   **Privacy & Control**: API keys and analysis history are stored locally in the browser, never on a server.
+-   **Editable Charts & Low-Confidence Flags**: Correct any AI extraction errors directly. The app automatically highlights individual chart bars the AI was uncertain about, prompting you to verify them.
+-   **Persistent History**: An optional Node.js server saves all analysis results, bill images, and exported CSVs so your data is never lost.
+-   **Data Portability**: Export extracted data to a server-side CSV folder for permanent records or submit it to a webhook via Formspree.
+-   **Privacy & Control**: When not using the server, API keys and analysis history are stored locally in the browser.
 -   **Flexible AI Backend**: Easily switch between Google Gemini, a local Ollama instance, or OpenAI.
 -   **Interactive & High-Confidence Data**: All extracted fields are editable. Low-confidence extractions are automatically flagged for user review.
 
@@ -21,34 +23,27 @@ This project is built with React, TypeScript, and Tailwind CSS, and supports mul
 | Category   | Technology        | Justification                                                 |
 | :--------- | :---------------- | :------------------------------------------------------------ |
 | Frontend   | React + TypeScript| For a robust, type-safe, and component-based UI.              |
+| Backend    | Node.js + Express | For an optional, simple, and effective persistent storage solution. |
 | Styling    | Tailwind CSS      | For rapid, consistent, and responsive UI design.              |
 | AI SDK     | `@google/genai`   | Official, modern SDK for the Google Gemini API.               |
 | Charting   | Recharts          | Composable and easy-to-use charting library for React.        |
-| Build Tool | Vite (via importmap) | App is structured for a modern, fast development experience.  |
 
 ## 4. Getting Started
-
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
 ### 4.1. Prerequisites
 
 -   You need a modern web browser like Chrome, Firefox, or Safari.
 -   A code editor for viewing or modifying the files.
+-   For the persistent history feature, you will need [Node.js](https://nodejs.org/) (v18 or newer).
 
-### 4.2. Environment Configuration
+### 4.2. Environment Configuration (Optional)
 
-The application requires API keys to communicate with AI services.
+If you are using a development server like Vite, the application can automatically load API keys from an environment file.
 
 1.  **Create an environment file**: In the root of the project, create a new file named `.env`.
 
-2.  **Copy contents**: Copy the contents from `.env.example` into your new `.env` file.
-
-3.  **Add API Key**: You must add your Google AI Studio API key to use the application.
-    -   Open the `.env` file.
-    -   Find the line `VITE_GEMINI_API_KEY=""`.
-    -   Paste your key between the quotes. You can get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-
-    Your `.env` file should look like this:
+2.  **Add API Key**: You must add at least one AI provider API key to use the application.
+    -   Open the `.env` file and add your keys. You can get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
     ```env
     # Required for Gemini provider
     VITE_GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
@@ -60,25 +55,50 @@ The application requires API keys to communicate with AI services.
     VITE_FORMSPREE_FORM_ID=""
     ```
 
-## 5. How to Use the Application
+## 5. How to Run the Application
 
-1.  **Launch the App**: Open the `index.html` file in your browser.
-2.  **Configure Settings**:
-    -   Click the **gear icon** (⚙️) in the top-right corner to open Settings.
-    -   The app reads the API key from your `.env` file automatically. If you need to enter it manually, you can do so here.
+You can run the app in two ways: as a simple static page (history in browser) or with the included server (persistent history on your machine).
+
+### 5.1. Method 1: Simple Static App (Browser-Only Mode)
+
+1.  **Launch**: Open the `index.html` file directly in your browser from your file system.
+2.  **Configure**: Click the **gear icon** (⚙️) in the top-right corner. You **must** enter your AI provider API keys manually in the settings panel.
+3.  **Use**: Your analysis history will be stored in your browser's local storage and will be cleared if you clear your browser data.
+
+### 5.2. Method 2: With Node.js Server (Recommended for Full Features)
+
+This method provides the complete experience, including server-side storage for your analysis history, uploaded bill images, and exported CSV files.
+
+**Step 1: Install Dependencies (One-Time Setup)**
+Open a terminal in the project's root directory and run this command. You only need to do this once.
+
+```bash
+npm install
+```
+
+**Step 2: Start the Server**
+In your terminal, run the following command to start the local server:
+
+```bash
+npm run server
+```
+
+The server will start, and you will see a message like `AI Bill Analyzer server running at http://localhost:4000`. Keep this terminal window open while you use the app.
+
+**Step 3: Launch the App**
+Open your web browser and navigate to the URL from the terminal:
+➡️ **http://localhost:4000**
+
+4.  **Configure Settings**:
+    -   Click the **gear icon** (⚙️). If you are not using a `.env` file with a tool like Vite, you **must** enter your AI provider API keys manually in the settings panel.
     -   Save your settings.
-3.  **Upload a Bill**:
-    -   On the welcome screen, drag and drop a bill image (PNG, JPG, WEBP) into the upload area.
-    -   Alternatively, click the upload area to select a file or click "Use Camera" to scan a bill directly.
-4.  **Analyze**:
-    -   After selecting an image, a preview will be shown.
-    -   Click the **"✨ Analyze Bill"** button to start the process.
-5.  **Review and Edit**:
-    -   The AI-extracted data will be displayed in an editable form.
-    -   Fields with low-confidence scores will be highlighted with a yellow warning icon.
-    -   You can click any field to correct or update the information.
-6.  **Export or Submit**:
-    -   Click **"Download CSV"** to save the data to your computer.
-    -   If configured, click **"Submit Form"** to send the data to a Formspree endpoint.
-7.  **View History**:
-    -   Click the **clock icon** (🕒) to view a list of your past analyses. You can load or clear previous results from this panel.
+    
+5.  **Use the App**: Your analysis history will now be saved on the server in `history.json`. Images will be stored in the `uploads/` folder, and exported CSVs will be saved in the `csv/` folder.
+
+## 6. How to Use the Application
+
+1.  **Upload a Bill**: On the welcome screen, drag and drop a bill image (PNG, JPG, WEBP) into the upload area. Alternatively, click to select a file or use the camera.
+2.  **Analyze**: After selecting an image, a preview is shown. Click **"✨ Analyze Bill"** to start.
+3.  **Review and Edit**: The AI-extracted data is displayed. Fields with low-confidence scores are highlighted with a yellow icon. Any chart bars the AI was uncertain about are colored yellow. You can click any field to edit it, including the data in the usage charts.
+4.  **Export or Submit**: Click **"Save & Export CSV"** to save the data as a CSV file on the server. Or, click **"Submit Form"** to send it to a Formspree endpoint (if configured).
+5.  **View History**: Click the **clock icon** (🕒) to view past analyses. You can load or clear results from this panel.

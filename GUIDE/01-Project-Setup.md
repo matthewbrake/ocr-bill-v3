@@ -1,0 +1,63 @@
+# Guide 1: Project Setup
+
+This guide provides step-by-step instructions to set up and run the AI Bill Analyzer application on your local machine.
+
+## Prerequisites
+
+-   **Node.js**: You must have Node.js installed. Version 18 or newer is recommended. You can download it from [nodejs.org](https://nodejs.org/). Node.js comes with `npm` (Node Package Manager), which is required to install dependencies.
+-   **Web Browser**: A modern web browser like Google Chrome, Firefox, or Safari.
+-   **Code Editor**: An editor like Visual Studio Code is recommended for viewing and editing the code.
+
+## Setup Steps
+
+### Step 1: Install Dependencies
+
+The project's backend server relies on several Node.js packages (like Express). These are listed in the `package.json` file.
+
+1.  Open your terminal or command prompt.
+2.  Navigate to the root directory of the project (the folder containing `package.json`).
+3.  Run the following command. This will read `package.json` and download all the necessary packages into a `node_modules` folder. You only need to do this once.
+
+    ```bash
+    npm install
+    ```
+
+### Step 2: Configure Environment Variables (Optional but Recommended)
+
+The application can be configured with API keys for different AI providers.
+
+1.  In the root of the project, create a new file named `.env`.
+2.  Add your API keys to this file. You can get a free key for testing from [Google AI Studio](https://aistudio.google.com/app/apikey).
+
+    ```env
+    # Required for the Google Gemini provider
+    VITE_GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
+
+    # Required for the OpenAI provider (optional)
+    VITE_OPENAI_API_KEY="YOUR_OPENAI_API_KEY_HERE"
+
+    # Optional: For using the "Submit Form" button feature
+    VITE_FORMSPREE_FORM_ID="YOUR_FORMSPREE_ID_HERE"
+    ```
+
+    **Note**: Using a `.env` file requires a build tool like Vite to inject these variables into the frontend code. If you are running the `index.html` file directly, this file will not be read, and you must enter the keys manually in the application's settings panel.
+
+### Step 3: Run the Application
+
+The application includes a Node.js server that provides the best experience, including persistent history and file saving.
+
+1.  In your terminal, from the project's root directory, run the following command:
+
+    ```bash
+    npm run server
+    ```
+
+2.  This command starts the server. You should see a confirmation message in your terminal:
+
+    ```
+    AI Bill Analyzer server running at http://localhost:4000
+    ```
+
+3.  Open your web browser and navigate to the URL provided: **http://localhost:4000**.
+
+The application is now running. You can start uploading bills for analysis. Your history, uploaded images, and exported CSVs will be saved in the project folder.

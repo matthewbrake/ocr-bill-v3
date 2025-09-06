@@ -1,4 +1,3 @@
-
 export enum AiProvider {
   GEMINI = 'gemini',
   OLLAMA = 'ollama',
@@ -33,6 +32,7 @@ export interface ConfidenceScores {
 export interface UsageChartDataPointValue {
   year: string;
   value: number;
+  confidence: number;
 }
 export interface UsageChartDataPoint {
   month: string;
@@ -68,4 +68,5 @@ export interface AnalysisRecord {
   id: string;
   timestamp: string;
   data: BillData;
+  imagePath?: string;
 }

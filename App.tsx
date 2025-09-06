@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import type { AnalysisRecord, BillData } from './types/index';
 import { useAiSettings } from './hooks/useAiSettings';
@@ -26,39 +25,70 @@ const App: React.FC = () => {
     const [history, setHistory] = useState<AnalysisRecord[]>([]);
 
     useEffect(() => {
-        try {
-            const storedHistory = localStorage.getItem('billAnalyzerHistory');
-            if (storedHistory) {
-                setHistory(JSON.parse(storedHistory));
+        const fetchHistory = async () => {
+            try {
+                // Assuming the server is running on the same host
+                const response = await fetch('/api/history');
+                if (response.ok) {
+                    const data = await response.json();
+                    setHistory(data);
+                } else {
+                     // Fallback to localStorage if server is not running
+                    const storedHistory = localStorage.getItem('billAnalyzerHistory');
+                    if (storedHistory) setHistory(JSON.parse(storedHistory));
+                }
+            } catch (e) {
+                console.warn("Server not found, falling back to localStorage for history.", e);
+                 const storedHistory = localStorage.getItem('billAnalyzerHistory');
+                 if (storedHistory) setHistory(JSON.parse(storedHistory));
             }
-        } catch (e) {
-            console.error("Failed to parse history from localStorage", e);
-            localStorage.removeItem('billAnalyzerHistory');
-        }
+        };
+        fetchHistory();
     }, []);
 
-    const saveToHistory = (result: BillData) => {
-        const newRecord: AnalysisRecord = {
-            id: new Date().toISOString(),
-            timestamp: new Date().toLocaleString(),
-            data: result,
-        };
-        const updatedHistory = [newRecord, ...history].slice(0, 50); // Keep max 50 records
-        setHistory(updatedHistory);
-        localStorage.setItem('billAnalyzerHistory', JSON.stringify(updatedHistory));
+    const saveToHistory = async (result: BillData) => {
+        if (!imageSrc) return;
+        
+        try { // Try saving to server first
+            const response = await fetch('/api/history', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: result, imageSrc: imageSrc }),
+            });
+            if (!response.ok) throw new Error('Failed to save history to server');
+            const newRecord = await response.json();
+            setHistory(prev => [newRecord, ...prev]);
+        } catch (e) {
+            console.warn("Could not save to server, falling back to localStorage.", e);
+            const newRecord: AnalysisRecord = {
+                id: new Date().toISOString(),
+                timestamp: new Date().toLocaleString(),
+                data: result,
+                imagePath: imageSrc, // Save base64 image directly for localStorage
+            };
+            const updatedHistory = [newRecord, ...history].slice(0, 50);
+            setHistory(updatedHistory);
+            localStorage.setItem('billAnalyzerHistory', JSON.stringify(updatedHistory));
+        }
     };
     
     const loadFromHistory = (record: AnalysisRecord) => {
         setAnalysisResult(record.data);
-        setImageSrc(null); // Or you could store imageSrc in history too
+        setImageSrc(record.imagePath || null);
         setError(null);
         setIsLoading(false);
         setIsHistoryOpen(false);
     };
 
-    const clearHistory = () => {
+    const clearHistory = async () => {
+        try { // Try clearing server history
+             const response = await fetch('/api/history', { method: 'DELETE' });
+             if (!response.ok) throw new Error('Failed to clear history on server');
+        } catch(e) {
+            console.warn("Could not clear server history, clearing localStorage.", e);
+            localStorage.removeItem('billAnalyzerHistory');
+        }
         setHistory([]);
-        localStorage.removeItem('billAnalyzerHistory');
         setIsHistoryOpen(false);
     };
 
@@ -80,7 +110,7 @@ const App: React.FC = () => {
         try {
             const result = await analyzeBill(imageSrc, settings);
             setAnalysisResult(result);
-            saveToHistory(result);
+            await saveToHistory(result);
         } catch (err: any) {
             console.error("Analysis failed:", err);
             setError(err.message || "An unknown error occurred during analysis.");
@@ -114,7 +144,7 @@ const App: React.FC = () => {
                 ) : error ? (
                     <ErrorMessage message={error} onClear={() => setError(null)} />
                 ) : analysisResult ? (
-                    <BillDataDisplay result={analysisResult} onNewAnalysis={handleNewAnalysis} />
+                    <BillDataDisplay result={analysisResult} onNewAnalysis={handleNewAnalysis} imageSrc={imageSrc} />
                 ) : imageSrc ? (
                     <div className="flex flex-col items-center gap-6 p-6 bg-gray-800 rounded-xl shadow-lg">
                         <h2 className="text-2xl font-bold text-cyan-400">Image Preview</h2>

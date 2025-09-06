@@ -6,7 +6,7 @@ export const MASTER_SYSTEM_PROMPT = `You are an expert OCR system specializing i
 - Analyze the provided utility bill image and extract the information below.
 - Format your response strictly as a JSON object that adheres to the provided schema. Do not include any introductory text, explanations, or markdown formatting. Your entire output must be the raw JSON object.
 - **Data in Charts**: Carefully estimate the values from the bar heights relative to the y-axis if exact numbers aren't present.
-- **Confidence Score**: For each field, provide a confidence score between 0.0 (not confident) and 1.0 (very confident) based on the clarity and unambiguity of the information in the image.
+- **Confidence Score**: For each field AND for each individual data point in a usage chart, provide a confidence score between 0.0 (not confident) and 1.0 (very confident) based on the clarity and unambiguity of the information in the image.
 - **Final Check**: Ensure every required field in the schema is present. If an optional field is not found, omit it from the final JSON.`;
 
 export const RESPONSE_JSON_SCHEMA = {
@@ -53,9 +53,10 @@ export const RESPONSE_JSON_SCHEMA = {
                     "type": GenAiType.OBJECT,
                     "properties": {
                       "year": { "type": GenAiType.STRING, "description": "The year of the usage, e.g., '2023'." },
-                      "value": { "type": GenAiType.NUMBER, "description": "The usage value for that year." }
+                      "value": { "type": GenAiType.NUMBER, "description": "The usage value for that year." },
+                      "confidence": { "type": GenAiType.NUMBER, "description": "Confidence score from 0.0 to 1.0 for this specific usage value." }
                     },
-                    "required": ["year", "value"]
+                    "required": ["year", "value", "confidence"]
                   }
                 }
               },
