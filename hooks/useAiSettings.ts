@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect, useMemo } from 'react';
 import type { AiSettings } from '../types/index';
 import { DEFAULT_AI_SETTINGS } from '../constants';
@@ -36,8 +37,9 @@ export const useAiSettings = () => {
 
     const isConfigured = useMemo(() => {
         switch (settings.provider) {
+            // FIX: Per coding guidelines, the Gemini API key must come from `process.env.API_KEY`. The configuration check is updated to reflect this.
             case AiProvider.GEMINI:
-                return !!settings.gemini.apiKey;
+                return !!process.env.API_KEY;
             case AiProvider.OLLAMA:
                 return !!settings.ollama.serverUrl && !!settings.ollama.model;
             case AiProvider.OPENAI:

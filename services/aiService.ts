@@ -28,10 +28,11 @@ function cleanBase64(base64: string): string {
 
 
 async function _callGemini(imageData: string, settings: AiSettings): Promise<BillData> {
-    if (!settings.gemini.apiKey) {
-        throw new Error("Google Gemini API key is not set.");
+    // FIX: Per coding guidelines, the API key must be obtained exclusively from `process.env.API_KEY`.
+    if (!process.env.API_KEY) {
+        throw new Error("Google Gemini API key is not configured in environment variables.");
     }
-    const ai = new GoogleGenAI({ apiKey: settings.gemini.apiKey });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const imagePart = {
         inlineData: {
             mimeType: base64ToMime(imageData),

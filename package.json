@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
-    "server": "nodemon server.ts"
+    "server": "nodemon --exec node --loader ts-node/esm server.ts"
   },
   "dependencies": {
     "body-parser": "^1.20.2",
