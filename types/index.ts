@@ -69,4 +69,5 @@ export interface AnalysisRecord {
   timestamp: string;
   data: BillData;
   imagePath?: string;
+  rawTimestamp?: string;
 }

@@ -1,15 +1,19 @@
 {
   "name": "ai-bill-analyzer",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Upload or capture a utility bill to have AI extract and visualize key information.",
-  "main": "server.ts",
+  "type": "module",
+  "main": "dist/server.js",
   "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
     "server": "nodemon server.ts"
   },
   "dependencies": {
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "winston": "^3.13.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

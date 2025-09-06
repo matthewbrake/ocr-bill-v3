@@ -1,32 +1,29 @@
-// FIX: Import express as a namespace to resolve type conflicts with global Request/Response.
+// FIX: Rely on express type inference for request and response objects to avoid conflicts with global types.
 import express from 'express';
 import cors from 'cors';
-// FIX: Removed deprecated body-parser to prevent type conflicts.
-// import bodyParser from 'body-parser';
 import fs from 'fs/promises';
 import path from 'path';
-import type { BillData, LineItem, UsageChart } from './types';
-// FIX: Add support for __dirname in ES modules and import Buffer to resolve TypeScript errors.
 import { fileURLToPath } from 'url';
 import { Buffer } from 'buffer';
+import type { BillData, LineItem, UsageChart, AnalysisRecord } from './types/index.js';
+import logger from './logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-// Allow configuring the port via environment variables, defaulting to 4000
 const port = process.env.PORT || 4000;
 
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
-const HISTORY_FILE = path.join(__dirname, 'history.json');
-const CSV_DIR = path.join(__dirname, 'csv');
+// Determine project root directory to correctly serve static files in dev and prod
+const projectRoot = path.resolve(__dirname, __dirname.endsWith('dist') ? '..' : '.');
+const UPLOADS_DIR = path.join(projectRoot, 'uploads');
+const HISTORY_FILE = path.join(projectRoot, 'history.json');
+const CSV_DIR = path.join(projectRoot, 'csv');
 
 // Middlewares
 app.use(cors());
-// Increase payload size limit for base64 images
-// FIX: Replaced deprecated bodyParser.json() with built-in express.json() to fix type errors.
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(__dirname));
+app.use(express.static(projectRoot));
 app.use('/uploads', express.static(UPLOADS_DIR));
 
 const generateId = () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -34,23 +31,18 @@ const generateId = () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 // Ensure directories and history file exist
 const initialize = async () => {
     try {
-        await fs.access(UPLOADS_DIR);
-    } catch {
-        await fs.mkdir(UPLOADS_DIR, { recursive: true });
-    }
-     try {
-        await fs.access(CSV_DIR);
-    } catch {
-        await fs.mkdir(CSV_DIR, { recursive: true });
-    }
-    try {
+        await Promise.all([
+            fs.mkdir(UPLOADS_DIR, { recursive: true }),
+            fs.mkdir(CSV_DIR, { recursive: true })
+        ]);
         await fs.access(HISTORY_FILE);
     } catch {
+        logger.info('History file not found, creating a new one.');
         await fs.writeFile(HISTORY_FILE, JSON.stringify([]));
     }
 };
 
-// --- CSV Generation Utilities (Server-Side) ---
+// --- CSV Generation Utilities ---
 const escapeCsvCell = (cell: any): string => {
     const cellStr = String(cell ?? '');
     if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
@@ -92,22 +84,27 @@ const generateCsvContent = (data: BillData): string => {
     return csvContent.join('\n');
 };
 
-
 // --- API Routes ---
 
-// FIX: Use express.Request and express.Response to prevent global type conflicts.
-app.get('/api/history', async (req: express.Request, res: express.Response) => {
+// FIX: Removed explicit Request and Response types to allow for correct type inference.
+app.get('/api/history', async (req, res) => {
     try {
         const historyData = await fs.readFile(HISTORY_FILE, 'utf-8');
-        res.json(JSON.parse(historyData).sort((a, b) => new Date(b.rawTimestamp).getTime() - new Date(a.rawTimestamp).getTime()));
+        const history: AnalysisRecord[] = JSON.parse(historyData);
+        const sortedHistory = history.sort((a, b) => {
+             const dateA = a.rawTimestamp ? new Date(a.rawTimestamp).getTime() : 0;
+             const dateB = b.rawTimestamp ? new Date(b.rawTimestamp).getTime() : 0;
+             return dateB - dateA;
+        });
+        res.json(sortedHistory);
     } catch (error) {
-        console.error('Error reading history:', error);
+        logger.error('Error reading history:', error);
         res.status(500).json({ message: 'Failed to retrieve history' });
     }
 });
 
-// FIX: Use express.Request and express.Response to prevent global type conflicts.
-app.post('/api/history', async (req: express.Request, res: express.Response) => {
+// FIX: Removed explicit Request and Response types to allow for correct type inference.
+app.post('/api/history', async (req, res) => {
     const { data, imageSrc } = req.body;
     if (!data || !imageSrc) {
         return res.status(400).json({ message: 'Missing data or imageSrc' });
@@ -126,7 +123,7 @@ app.post('/api/history', async (req: express.Request, res: express.Response) => 
         const history = JSON.parse(historyData);
 
         const now = new Date();
-        const newRecord = {
+        const newRecord: AnalysisRecord = {
             id: generateId(),
             rawTimestamp: now.toISOString(),
             timestamp: now.toLocaleString(),
@@ -137,30 +134,33 @@ app.post('/api/history', async (req: express.Request, res: express.Response) => 
         const updatedHistory = [newRecord, ...history].slice(0, 50);
         await fs.writeFile(HISTORY_FILE, JSON.stringify(updatedHistory, null, 2));
 
+        logger.info(`Saved new history record ${newRecord.id} for account ${data.accountNumber}`);
         res.status(201).json(newRecord);
     } catch (error) {
-        console.error('Error saving history:', error);
+        logger.error('Error saving history:', error);
         res.status(500).json({ message: 'Failed to save history' });
     }
 });
 
-// FIX: Use express.Request and express.Response to prevent global type conflicts.
-app.delete('/api/history', async (req: express.Request, res: express.Response) => {
+// FIX: Removed explicit Request and Response types to allow for correct type inference.
+app.delete('/api/history', async (req, res) => {
     try {
         await fs.writeFile(HISTORY_FILE, JSON.stringify([]));
         const files = await fs.readdir(UPLOADS_DIR);
         for (const file of files) {
+            // FIX: Corrected typo from UPLOADS_S to UPLOADS_DIR.
             await fs.unlink(path.join(UPLOADS_DIR, file));
         }
+        logger.info('History cleared successfully.');
         res.status(200).json({ message: 'History cleared successfully' });
     } catch (error) {
-        console.error('Error clearing history:', error);
+        logger.error('Error clearing history:', error);
         res.status(500).json({ message: 'Failed to clear history' });
     }
 });
 
-// FIX: Use express.Request and express.Response to prevent global type conflicts.
-app.post('/api/save-analysis', async (req: express.Request, res: express.Response) => {
+// FIX: Removed explicit Request and Response types to allow for correct type inference.
+app.post('/api/save-analysis', async (req, res) => {
     const data: BillData = req.body;
     if (!data) {
         return res.status(400).json({ message: 'Missing bill data' });
@@ -175,15 +175,15 @@ app.post('/api/save-analysis', async (req: express.Request, res: express.Respons
         const csvContent = generateCsvContent(data);
         await fs.writeFile(filePath, csvContent);
 
+        logger.info(`CSV saved successfully to ${filePath}`);
         res.status(200).json({ message: `CSV saved on server as ${filename}` });
     } catch (error) {
-        console.error('Error saving CSV:', error);
+        logger.error('Error saving CSV:', error);
         res.status(500).json({ message: 'Failed to save CSV to server' });
     }
 });
 
-
 app.listen(port, () => {
     initialize();
-    console.log(`AI Bill Analyzer server running at http://localhost:${port}`);
+    logger.info(`AI Bill Analyzer server running at http://localhost:${port}`);
 });

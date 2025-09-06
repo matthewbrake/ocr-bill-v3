@@ -12,7 +12,7 @@ This guide provides step-by-step instructions to set up and run the AI Bill Anal
 
 ### Step 1: Install Dependencies
 
-The project's backend server relies on several Node.js packages (like Express). These are listed in the `package.json` file.
+The project's backend server relies on several Node.js packages (like Express and Winston). These are listed in the `package.json` file.
 
 1.  Open your terminal or command prompt.
 2.  Navigate to the root directory of the project (the folder containing `package.json`).
@@ -47,21 +47,34 @@ The application can be configured with API keys and other settings.
 
 ### Step 3: Run the Application
 
-The application includes a Node.js server that provides the best experience, including persistent history and file saving.
+The application includes a Node.js server that provides the best experience, including persistent history, file saving, and logging.
 
-1.  In your terminal, from the project's root directory, run the following command:
+**Option A: Development Mode**
 
+This mode is best for testing and making code changes, as the server will restart automatically.
+
+1.  In your terminal, from the project's root directory, run:
     ```bash
     npm run server
     ```
+2.  You will see a confirmation message: `AI Bill Analyzer server running at http://localhost:4000`.
 
-2.  This command starts the server. You should see a confirmation message in your terminal:
+**Option B: Production Mode**
 
+This is the recommended way to run the app for stable, long-term use.
+
+1.  First, build the server code. This compiles the TypeScript into optimized JavaScript. You only need to do this once, or after you change the server code.
+    ```bash
+    npm run build
     ```
-    AI Bill Analyzer server running at http://localhost:4000
+2.  Now, start the application:
+    ```bash
+    npm start
     ```
-    (The port may be different if you configured it in your `.env` file).
+3.  You will see the same `server running...` message.
 
-3.  Open your web browser and navigate to the URL provided: **http://localhost:4000**.
+### Step 4: Access the Application
 
-The application is now running. You can start uploading bills for analysis. Your history, uploaded images, and exported CSVs will be saved in the project folder.
+After starting the server with either method, open your web browser and navigate to the URL provided: **http://localhost:4000**.
+
+The application is now running. You can start uploading bills for analysis. Your history, uploaded images, exported CSVs, and server logs will be saved in the project folder.

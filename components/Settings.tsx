@@ -30,7 +30,6 @@ const Settings: React.FC<SettingsProps> = ({ onClose, settings, onSave }) => {
             const models = await getMultimodalModels(currentSettings.ollama.serverUrl);
             setOllamaModels(models);
             if (models.length > 0 && !currentSettings.ollama.model) {
-                 // FIX: Use AiProvider enum instead of string literal for type safety.
                  handleSettingChange(AiProvider.OLLAMA, 'model', models[0]);
             }
         } else {
@@ -84,7 +83,6 @@ const Settings: React.FC<SettingsProps> = ({ onClose, settings, onSave }) => {
                     {activeTab === AiProvider.GEMINI && (
                         <div>
                             <label htmlFor="gemini-key" className="block text-sm font-medium text-gray-300 mb-1">Google AI Studio API Key</label>
-                            {/* FIX: Use AiProvider enum instead of string literal for type safety. */}
                             <input id="gemini-key" type="password" value={currentSettings.gemini.apiKey} onChange={(e) => handleSettingChange(AiProvider.GEMINI, 'apiKey', e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Enter your Gemini API Key"/>
                         </div>
                     )}
@@ -94,7 +92,6 @@ const Settings: React.FC<SettingsProps> = ({ onClose, settings, onSave }) => {
                             <div>
                                 <label htmlFor="ollama-url" className="block text-sm font-medium text-gray-300 mb-1">Ollama Server URL</label>
                                 <div className="flex gap-2">
-                                    {/* FIX: Use AiProvider enum instead of string literal for type safety. */}
                                     <input id="ollama-url" type="text" value={currentSettings.ollama.serverUrl} onChange={(e) => handleSettingChange(AiProvider.OLLAMA, 'serverUrl', e.target.value)} className="flex-grow bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="http://localhost:11434"/>
                                     <button onClick={handleOllamaTest} disabled={ollamaStatus === 'testing'} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-md text-sm font-semibold disabled:bg-indigo-400">
                                         {ollamaStatus === 'testing' ? 'Testing...' : 'Test Connection'}
@@ -121,16 +118,21 @@ const Settings: React.FC<SettingsProps> = ({ onClose, settings, onSave }) => {
                                                 {ollamaModels.map(model => <option key={model} value={model} />)}
                                             </datalist>
                                         </>
-                                    ) : <p className="text-sm text-yellow-400">No suitable multimodal models found. Try pulling one, e.g., `ollama pull llava`.</p>}
+                                    ) : (
+                                        <>
+                                            <input id="ollama-model" type="text" value={currentSettings.ollama.model} onChange={(e) => handleSettingChange(AiProvider.OLLAMA, 'model', e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Type model name, e.g. llava"/>
+                                            <p className="mt-2 text-sm text-yellow-400">No multimodal models detected automatically. Try pulling one (e.g., `ollama pull llava`) and type its name above.</p>
+                                        </>
+                                    )}
                                 </div>
                             )}
+                             {ollamaStatus !== 'success' && <p className="text-sm text-gray-400 mt-2">Click "Test Connection" to discover available models.</p>}
                         </div>
                     )}
                     
                     {activeTab === AiProvider.OPENAI && (
                          <div>
                             <label htmlFor="openai-key" className="block text-sm font-medium text-gray-300 mb-1">OpenAI API Key</label>
-                            {/* FIX: Use AiProvider enum instead of string literal for type safety. */}
                             <input id="openai-key" type="password" value={currentSettings.openai.apiKey} onChange={(e) => handleSettingChange(AiProvider.OPENAI, 'apiKey', e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Enter your OpenAI API Key (sk-...)"/>
                         </div>
                     )}

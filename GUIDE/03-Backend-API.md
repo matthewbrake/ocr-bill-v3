@@ -7,6 +7,7 @@ This document describes the simple yet powerful Node.js backend server built wit
 -   **Node.js**: The JavaScript runtime environment for the server.
 -   **Express**: A minimal and flexible Node.js web application framework.
 -   **TypeScript**: Used for type safety in the backend code.
+-   **Winston**: A robust logging library for recording server activity to files.
 -   **ts-node & nodemon**: Development tools that allow running the TypeScript server directly and automatically restarting it when files change.
 
 ## Server Functionality
@@ -16,15 +17,17 @@ The primary purpose of the server is to:
 2.  Provide API endpoints for managing analysis history.
 3.  Store uploaded bill images permanently.
 4.  Save final, user-approved analysis data as CSV files.
-5.  Be configurable, for example, allowing the server port to be changed.
+5.  Log all important events and errors to files for easy debugging.
+6.  Be configurable, for example, allowing the server port to be changed.
 
-## File-Based "Database"
+## File-Based "Database" and Storage
 
 The server uses the local file system for storage, making it easy to set up and inspect.
 
 -   `history.json`: A single JSON file that stores an array of all analysis records. This acts as the history database.
 -   `uploads/`: A directory where the image of every analyzed bill is saved.
 -   `csv/`: A directory where exported CSV files are stored.
+-   `logs/`: A directory containing `server.log` and `error.log` for all server activity.
 
 ## API Endpoints
 
@@ -55,6 +58,9 @@ The server exposes the following RESTful API endpoints. All endpoints are prefix
 
 ## How to Run
 
-The server is started using the `npm run server` command, which is defined in `package.json`. This command uses `nodemon` to watch for file changes and `ts-node` to execute the `server.ts` TypeScript file directly.
+The server can be run in two modes:
+
+1.  **Development**: `npm run server` - Uses `nodemon` to watch for file changes and restart automatically.
+2.  **Production**: `npm run build` followed by `npm start` - Compiles the server to JavaScript and runs the optimized version.
 
 The server runs on port 4000 by default, but this can be changed by setting a `PORT` environment variable (e.g., in a `.env` file).
