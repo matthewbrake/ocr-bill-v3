@@ -12,11 +12,6 @@ const logVerbose = (message: string, data: any) => {
     }
 };
 
-function cleanBase64(base64: string): string {
-    return base64.split(',')[1];
-}
-
-
 async function _callGemini(imageData: string, settings: AiSettings): Promise<BillData> {
     logVerbose('Calling Gemini via backend proxy...', {});
     const response = await fetch('/api/analyze/gemini', {
@@ -39,47 +34,28 @@ async function _callGemini(imageData: string, settings: AiSettings): Promise<Bil
 }
 
 async function _callOllama(imageData: string, settings: AiSettings): Promise<BillData> {
-    const { serverUrl, model } = settings.ollama;
-    if (!serverUrl || !model) {
+    if (!settings.ollama.serverUrl || !settings.ollama.model) {
         throw new Error("Ollama server URL or model is not configured.");
     }
-
-    const payload = {
-        model: model,
-        format: "json",
-        stream: false,
-        messages: [
-            { role: "system", content: "You are an expert OCR system for utility bills. Analyze the image and return a JSON object based on the user's request. Do not include any markdown formatting." },
-            {
-                role: "user",
-                content: "Analyze this utility bill.",
-                images: [cleanBase64(imageData)]
-            }
-        ]
-    };
-
-    logVerbose('Ollama Request:', { url: `${serverUrl}/api/chat`, payload });
-    const response = await fetch(`${serverUrl}/api/chat`, {
+    
+    logVerbose('Calling Ollama via backend proxy...', { settings });
+    const response = await fetch('/api/analyze/ollama', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageData, settings }),
     });
 
     if (!response.ok) {
-        const errorBody = await response.text();
-        logVerbose('Ollama Error Response:', errorBody);
-        throw new Error(`Ollama request failed: ${response.status} ${response.statusText}`);
+        const errorBody = await response.json();
+        logVerbose('Ollama Proxy Error Response:', errorBody);
+        throw new Error(errorBody.message || `Ollama analysis failed: ${response.statusText}`);
     }
 
-    const responseData = await response.json();
-    logVerbose('Ollama Response:', responseData);
-
-    try {
-        return JSON.parse(responseData.message.content);
-    } catch (e) {
-        console.error("Failed to parse Ollama JSON response:", responseData.message.content);
-        throw new Error("AI returned an invalid JSON format.");
-    }
+    const result = await response.json();
+    logVerbose('Ollama Proxy Response:', result);
+    return result;
 }
 
 

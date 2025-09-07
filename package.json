@@ -5,10 +5,11 @@
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "concurrently \"npm:watch:client\" \"npm:watch:server\" \"npm:server\"",
+    "dev": "npm run build:server && concurrently \"npm:watch:client\" \"npm:watch:server\" \"npm:server\"",
     "watch:client": "esbuild index.tsx --bundle --outfile=client.js --watch --sourcemap --log-level=info --format=esm --external:react --external:react-dom --external:recharts",
     "watch:server": "tsc --watch --preserveWatchOutput",
     "build:client": "esbuild index.tsx --bundle --outfile=client.js --minify --format=esm --external:react --external:react-dom --external:recharts",
+    "build:server": "tsc",
     "build": "tsc && npm run build:client",
     "start": "node dist/server.js",
     "server": "nodemon"
