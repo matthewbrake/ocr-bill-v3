@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { AiSettings } from '../types/index';
 import { AiProvider } from '../types/index';
-import { XIcon, CheckCircleIcon, ExclamationCircleIcon } from './icons';
+import { XIcon, CheckCircleIcon, ExclamationCircleIcon, WarningIcon } from './icons';
 import { testConnection, getMultimodalModels } from '../services/ollamaService';
 
 interface SettingsProps {
@@ -52,6 +52,13 @@ const Settings: React.FC<SettingsProps> = ({ onClose, settings, onSave }) => {
             }
         }));
     };
+
+    const isPotentiallyNonMultimodal = useMemo(() => {
+        const model = currentSettings.ollama.model.toLowerCase();
+        if (!model) return false;
+        const multiModalKeywords = ['llava', 'vision', 'moondream', 'bakllava', 'gpt-4o', 'gemini'];
+        return !multiModalKeywords.some(keyword => model.includes(keyword));
+    }, [currentSettings.ollama.model]);
     
     const TabButton: React.FC<{ provider: AiProvider; children: React.ReactNode }> = ({ provider, children }) => (
         <button
@@ -107,26 +114,27 @@ const Settings: React.FC<SettingsProps> = ({ onClose, settings, onSave }) => {
                             {ollamaStatus === 'success' && (
                                 <div>
                                     <label htmlFor="ollama-model" className="block text-sm font-medium text-gray-300 mb-1">Select or Enter Multimodal Model</label>
-                                    {ollamaModels.length > 0 ? (
-                                        <>
-                                            <input
-                                                id="ollama-model"
-                                                type="text"
-                                                list="ollama-models-list"
-                                                value={currentSettings.ollama.model}
-                                                onChange={(e) => handleSettingChange(AiProvider.OLLAMA, 'model', e.target.value)}
-                                                className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                                                placeholder="e.g., llava"
-                                            />
-                                            <datalist id="ollama-models-list">
-                                                {ollamaModels.map(model => <option key={model} value={model} />)}
-                                            </datalist>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <input id="ollama-model" type="text" value={currentSettings.ollama.model} onChange={(e) => handleSettingChange(AiProvider.OLLAMA, 'model', e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Type model name, e.g. llava"/>
-                                            <p className="mt-2 text-sm text-yellow-400">No multimodal models detected automatically. Try pulling one (e.g., `ollama pull llava`) and type its name above.</p>
-                                        </>
+                                    <input
+                                        id="ollama-model"
+                                        type="text"
+                                        list="ollama-models-list"
+                                        value={currentSettings.ollama.model}
+                                        onChange={(e) => handleSettingChange(AiProvider.OLLAMA, 'model', e.target.value)}
+                                        className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                        placeholder="e.g., llava"
+                                    />
+                                    <datalist id="ollama-models-list">
+                                        {ollamaModels.map(model => <option key={model} value={model} />)}
+                                    </datalist>
+                                     <p className="mt-2 text-xs text-gray-400">
+                                        Select an available model from the list or type a custom model name. 
+                                        Only multimodal (vision) models like LLaVA will work correctly.
+                                    </p>
+                                    {isPotentiallyNonMultimodal && (
+                                        <p className="mt-2 text-sm text-yellow-400 flex items-center gap-2">
+                                            <WarningIcon className="h-4 w-4 flex-shrink-0" />
+                                            This model may not support image analysis, which can lead to errors.
+                                        </p>
                                     )}
                                 </div>
                             )}

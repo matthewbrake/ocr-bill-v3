@@ -145,6 +145,7 @@ app.post('/api/analyze/gemini', async (req: ExpressRequest, res: ExpressResponse
         const response = await ai.models.generateContent(request);
         
         const jsonText = response.text?.trim();
+        logger.debug('Raw Gemini response text received', { jsonText });
         if (!jsonText) {
              logger.error('Received empty response text from Gemini API.');
              throw new Error('Received empty response from Gemini API.');
@@ -195,7 +196,7 @@ app.post('/api/analyze/ollama', async (req: ExpressRequest, res: ExpressResponse
 
     try {
         logger.info(`Proxying request to Ollama server at ${serverUrl} for model ${model}`);
-        logger.debug('Ollama proxy payload', payload);
+        logger.debug('Ollama proxy payload', { model: payload.model, format: payload.format, stream: payload.stream, systemMessage: payload.messages[0].content });
         const response = await fetch(`${serverUrl}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -209,11 +210,17 @@ app.post('/api/analyze/ollama', async (req: ExpressRequest, res: ExpressResponse
         }
         
         const responseData = await response.json();
+        const rawContent = responseData.message?.content;
         logger.info('Successfully received response from Ollama server.');
+        logger.debug('Raw Ollama response content received', { rawContent });
         
-        // CRITICAL: Add try-catch here to handle non-JSON responses from non-vision models
+        if (!rawContent) {
+            logger.error('Ollama response content is empty or missing.');
+            throw new Error('The AI model returned an empty response. Please check the model and try again.');
+        }
+
         try {
-            const result = JSON.parse(responseData.message.content);
+            const result = JSON.parse(rawContent);
             logger.debug('Full Ollama Parsed JSON Response:', { result });
             if (!result.accountNumber) {
                  logger.warn("Ollama response was missing 'accountNumber'. The model might not be suitable for this task or failed to extract it.");
@@ -222,7 +229,7 @@ app.post('/api/analyze/ollama', async (req: ExpressRequest, res: ExpressResponse
         } catch (parseError) {
              logger.error('Failed to parse JSON content from Ollama response. The model may not support JSON mode or image analysis.', { 
                 message: (parseError as Error).message,
-                content: responseData.message.content 
+                content: rawContent
             });
             throw new Error('The AI model returned a response in an unexpected format. Please ensure you are using a multimodal model (like llava) capable of processing images and generating JSON.');
         }

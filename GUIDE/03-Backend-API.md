@@ -63,7 +63,7 @@ The server is configured with a powerful logger to help you understand what's ha
     -   `logs/error.log`: Contains only error messages, making it easy to spot problems.
 
 -   **Verbose Mode**: For more detailed troubleshooting, you can run the server in a high-verbosity "debug" mode. This will print much more information to your terminal and the log files.
-    -   **Most importantly, it will log the entire JSON payload received from the AI model.** This is essential for debugging why an analysis might be failing or returning incomplete data.
+    -   **Most importantly, it will log the entire raw text response received from the AI model *before* it is parsed into JSON.** This is essential for debugging why an analysis might be failing or returning incomplete data, especially when testing different local models.
     -   To use verbose mode, start the server with this command:
     ```bash
     npm run dev:verbose

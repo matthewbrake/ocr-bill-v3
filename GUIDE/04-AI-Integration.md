@@ -44,9 +44,18 @@ The application is designed to be flexible, supporting multiple AI providers. Th
 -   **SDK**: Uses direct `fetch` calls to the OpenAI REST API.
 -   **Method**: Similar to Ollama, it sends the master prompt as a system message. It leverages OpenAI's "JSON Mode" by setting `response_format: { type: "json_object" }` to ensure a valid JSON response.
 
+## IMPORTANT: Use Multimodal (Vision) Models
+
+This application sends an image to the AI model. Therefore, **you must use a model that can process images**. These are often called "multimodal" or "vision" models.
+
+-   **Compatible Examples**: `llava`, `bakllava`, `moondream`, `gpt-4o`, `gemini-2.5-flash`.
+-   **Incompatible Examples**: `llama3`, `mistral`, `gpt-3.5-turbo`.
+
+If you select a text-only model, it will not be able to "see" the bill image. It will likely respond with plain text (e.g., "I cannot process images") instead of the required JSON data. The application will detect this and show you an error message like: *"The AI model returned a response in an unexpected format. Please ensure you are using a multimodal model..."*
+
 ## Handling Inconsistent AI Responses
 
-A major challenge with AI is that models, especially local ones, may not always perfectly follow instructions. They might omit a field (like `lineItems`) or return a value in the wrong format.
+A major challenge with AI is that models may not always perfectly follow instructions. They might omit a field (like `lineItems`) or return a value in the wrong format.
 
 The application is now built to be **highly resilient** to this:
 -   **Backend Validation**: The server includes `try-catch` blocks to ensure that if an AI model fails to return valid JSON, it sends a clean error message to the frontend instead of crashing.

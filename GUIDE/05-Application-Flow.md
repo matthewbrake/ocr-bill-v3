@@ -41,6 +41,7 @@ This guide provides a complete walkthrough of the AI Bill Analyzer's functionali
     -   **Editable Charts**: An "Edit Chart" button above each usage chart toggles it into an editable table. This allows the user to correct the month labels or the usage values for each year with precision. When done, the chart re-renders with the corrected data.
     -   **Save & Export**: The "Save & Export CSV" button sends the final, user-corrected data to the `/api/save-analysis` endpoint on the server, which generates and saves a CSV file in the `csv/` directory.
     -   **Submit Form**: If a Formspree ID is configured, this button submits the final data to that endpoint, allowing for integrations like sending the results to an email address.
+    -   **Debugging Panel**: At the bottom of the results page, there is a collapsible "Debug Information" panel. Expanding this reveals the raw, un-sanitized JSON response received directly from the AI model. This is an invaluable tool for understanding why a field might be missing or incorrect.
 
 ## 5. History and Settings
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import type { BillData, LineItem, UsageChart } from '../types/index';
-import { DownloadIcon, SubmitIcon, WarningIcon, EditIcon, CheckIcon, RefreshIcon, PencilIcon } from './icons';
+import { DownloadIcon, SubmitIcon, WarningIcon, EditIcon, CheckIcon, RefreshIcon, PencilIcon, ChevronDownIcon } from './icons';
 
 interface EditableFieldProps {
     label: string;
@@ -62,11 +62,12 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, value, confidenceS
 };
 
 
-const BillDataDisplay: React.FC<{ result: BillData, onNewAnalysis: () => void, imageSrc: string | null }> = ({ result, onNewAnalysis, imageSrc }) => {
+const BillDataDisplay: React.FC<{ result: BillData, rawAiResponse: any, onNewAnalysis: () => void, imageSrc: string | null }> = ({ result, rawAiResponse, onNewAnalysis, imageSrc }) => {
     const [editedResult, setEditedResult] = useState<BillData>(result);
     const [editingChartIndex, setEditingChartIndex] = useState<number | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
+    const [isDebugOpen, setIsDebugOpen] = useState(false);
 
     const formspreeId = (typeof import.meta !== 'undefined' && (import.meta as any).env) ? (import.meta as any).env.VITE_FORMSPREE_FORM_ID : '';
     const barColors = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE", "#00C49F"];
@@ -282,6 +283,24 @@ const BillDataDisplay: React.FC<{ result: BillData, onNewAnalysis: () => void, i
                     </button>
                 </div>
             </form>
+            
+            {/* Debug Information Panel */}
+            <div className="mt-8 bg-gray-800 border border-gray-700 rounded-xl">
+                 <button 
+                    onClick={() => setIsDebugOpen(!isDebugOpen)}
+                    className="w-full flex justify-between items-center p-4 text-left font-semibold"
+                >
+                    <span>Debug Information (Raw AI Response)</span>
+                    <ChevronDownIcon className={`h-6 w-6 transition-transform ${isDebugOpen ? 'rotate-180' : ''}`} />
+                 </button>
+                 {isDebugOpen && (
+                    <div className="p-4 border-t border-gray-600">
+                        <pre className="text-xs bg-gray-900 p-4 rounded-md overflow-x-auto whitespace-pre-wrap">
+                            {JSON.stringify(rawAiResponse, null, 2)}
+                        </pre>
+                    </div>
+                 )}
+            </div>
         </div>
     );
 };

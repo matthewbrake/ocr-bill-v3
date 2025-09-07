@@ -16,6 +16,7 @@ const App: React.FC = () => {
     const { settings, setSettings, isConfigured } = useAiSettings();
     const [imageSrc, setImageSrc] = useState<string | null>(null);
     const [analysisResult, setAnalysisResult] = useState<BillData | null>(null);
+    const [rawAiResponse, setRawAiResponse] = useState<any | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -75,6 +76,8 @@ const App: React.FC = () => {
     
     const loadFromHistory = (record: AnalysisRecord) => {
         setAnalysisResult(record.data);
+        // Raw response is not stored in history, so we clear it
+        setRawAiResponse(record.data); 
         setImageSrc(record.imagePath || null);
         setError(null);
         setIsLoading(false);
@@ -107,9 +110,11 @@ const App: React.FC = () => {
         setIsLoading(true);
         setError(null);
         setAnalysisResult(null);
+        setRawAiResponse(null);
 
         try {
             const rawResult = await analyzeBill(imageSrc, settings);
+            setRawAiResponse(rawResult); // Store the raw result for debugging
             const sanitizedResult = sanitizeAiResponse(rawResult);
             setAnalysisResult(sanitizedResult);
             await saveToHistory(sanitizedResult);
@@ -125,6 +130,7 @@ const App: React.FC = () => {
         setImageSrc(base64Image);
         setAnalysisResult(null);
         setError(null);
+        setRawAiResponse(null);
         setIsCameraOpen(false);
     };
 
@@ -132,6 +138,7 @@ const App: React.FC = () => {
         setImageSrc(null);
         setAnalysisResult(null);
         setError(null);
+        setRawAiResponse(null);
     };
 
     return (
@@ -147,7 +154,12 @@ const App: React.FC = () => {
                     ) : error ? (
                         <ErrorMessage message={error} onClear={() => setError(null)} />
                     ) : analysisResult ? (
-                        <BillDataDisplay result={analysisResult} onNewAnalysis={handleNewAnalysis} imageSrc={imageSrc} />
+                        <BillDataDisplay 
+                            result={analysisResult} 
+                            rawAiResponse={rawAiResponse}
+                            onNewAnalysis={handleNewAnalysis} 
+                            imageSrc={imageSrc} 
+                        />
                     ) : imageSrc ? (
                         <div className="flex flex-col items-center gap-6 p-6 bg-gray-800 rounded-xl shadow-lg">
                             <h2 className="text-2xl font-bold text-cyan-400">Image Preview</h2>
