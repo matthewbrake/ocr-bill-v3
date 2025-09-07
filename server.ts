@@ -1,5 +1,6 @@
 // FIX: Use explicit `Request` and `Response` types from express to avoid conflicts with global DOM types.
-import express, { Request, Response } from 'express';
+// FIX: Aliased Request and Response to avoid conflicts with global DOM types
+import express, { Request as ExpressRequest, Response as ExpressResponse } from 'express';
 import cors from 'cors';
 import fs from 'fs/promises';
 import path from 'path';
@@ -7,6 +8,12 @@ import { fileURLToPath } from 'url';
 import { Buffer } from 'buffer';
 import type { BillData, LineItem, UsageChart, AnalysisRecord } from './types/index.js';
 import logger from './logger.js';
+import dotenv from 'dotenv';
+import { GoogleGenAI } from '@google/genai';
+import { MASTER_SYSTEM_PROMPT, RESPONSE_JSON_SCHEMA } from './src/prompt.js';
+
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,7 +49,19 @@ const initialize = async () => {
     }
 };
 
-// --- CSV Generation Utilities ---
+// --- Utilities ---
+const base64ToMime = (base64: string): string => {
+    const signature = base64.substring(0, 30);
+    if (signature.includes("image/jpeg")) return "image/jpeg";
+    if (signature.includes("image/png")) return "image/png";
+    if (signature.includes("image/webp")) return "image/webp";
+    return 'image/png'; // Default
+}
+
+const cleanBase64 = (base64: string): string => {
+    return base64.split(',')[1];
+}
+
 const escapeCsvCell = (cell: any): string => {
     const cellStr = String(cell ?? '');
     if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
@@ -86,8 +105,55 @@ const generateCsvContent = (data: BillData): string => {
 
 // --- API Routes ---
 
+// Gemini analysis proxy
+// FIX: Use aliased ExpressRequest and ExpressResponse types to avoid conflict with DOM types.
+app.post('/api/analyze/gemini', async (req: ExpressRequest, res: ExpressResponse) => {
+    const { imageData } = req.body;
+    if (!imageData) {
+        return res.status(400).json({ message: 'Missing image data' });
+    }
+    
+    if (!process.env.API_KEY) {
+        logger.error('Gemini API key is not configured on the server.');
+        return res.status(500).json({ message: 'Google Gemini API key is not configured on the server. Please set the API_KEY environment variable.' });
+    }
+
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const imagePart = {
+            inlineData: {
+                mimeType: base64ToMime(imageData),
+                data: cleanBase64(imageData),
+            },
+        };
+
+        const request = {
+            model: 'gemini-2.5-flash',
+            contents: { parts: [imagePart] },
+            config: {
+                systemInstruction: MASTER_SYSTEM_PROMPT,
+                responseMimeType: "application/json",
+                responseSchema: RESPONSE_JSON_SCHEMA,
+            },
+        };
+
+        logger.info('Sending request to Gemini API...');
+        const response = await ai.models.generateContent(request);
+        const jsonText = response.text.trim();
+        const result = JSON.parse(jsonText);
+        
+        res.json(result);
+
+    } catch (error: any) {
+        logger.error('Error calling Gemini API:', error);
+        res.status(500).json({ message: error.message || 'An unknown error occurred during Gemini analysis.' });
+    }
+});
+
+
 // FIX: Use explicit `Request` and `Response` types from express to resolve type conflicts.
-app.get('/api/history', async (req: Request, res: Response) => {
+// FIX: Use aliased ExpressRequest and ExpressResponse types to avoid conflict with DOM types.
+app.get('/api/history', async (req: ExpressRequest, res: ExpressResponse) => {
     try {
         const historyData = await fs.readFile(HISTORY_FILE, 'utf-8');
         const history: AnalysisRecord[] = JSON.parse(historyData);
@@ -104,7 +170,8 @@ app.get('/api/history', async (req: Request, res: Response) => {
 });
 
 // FIX: Use explicit `Request` and `Response` types from express to resolve type conflicts.
-app.post('/api/history', async (req: Request, res: Response) => {
+// FIX: Use aliased ExpressRequest and ExpressResponse types to avoid conflict with DOM types.
+app.post('/api/history', async (req: ExpressRequest, res: ExpressResponse) => {
     const { data, imageSrc } = req.body;
     if (!data || !imageSrc) {
         return res.status(400).json({ message: 'Missing data or imageSrc' });
@@ -143,7 +210,8 @@ app.post('/api/history', async (req: Request, res: Response) => {
 });
 
 // FIX: Use explicit `Request` and `Response` types from express to resolve type conflicts.
-app.delete('/api/history', async (req: Request, res: Response) => {
+// FIX: Use aliased ExpressRequest and ExpressResponse types to avoid conflict with DOM types.
+app.delete('/api/history', async (req: ExpressRequest, res: ExpressResponse) => {
     try {
         await fs.writeFile(HISTORY_FILE, JSON.stringify([]));
         const files = await fs.readdir(UPLOADS_DIR);
@@ -160,7 +228,8 @@ app.delete('/api/history', async (req: Request, res: Response) => {
 });
 
 // FIX: Use explicit `Request` and `Response` types from express to resolve type conflicts.
-app.post('/api/save-analysis', async (req: Request, res: Response) => {
+// FIX: Use aliased ExpressRequest and ExpressResponse types to avoid conflict with DOM types.
+app.post('/api/save-analysis', async (req: ExpressRequest, res: ExpressResponse) => {
     const data: BillData = req.body;
     if (!data) {
         return res.status(400).json({ message: 'Missing bill data' });

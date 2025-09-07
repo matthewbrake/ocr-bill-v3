@@ -13,7 +13,8 @@
   "include": [
     "server.ts",
     "logger.ts",
-    "types/index.ts"
+    "types/index.ts",
+    "src/prompt.ts"
   ],
   "exclude": [
     "node_modules"

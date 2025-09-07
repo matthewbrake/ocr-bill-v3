@@ -1,7 +1,6 @@
-import { GoogleGenAI } from "@google/genai";
 import type { AiSettings, BillData } from '../types/index';
 import { AiProvider } from '../types/index';
-import { MASTER_SYSTEM_PROMPT, RESPONSE_JSON_SCHEMA } from '../src/prompt';
+import { MASTER_SYSTEM_PROMPT } from '../src/prompt';
 
 const logVerbose = (message: string, data: any) => {
     try {
@@ -14,51 +13,30 @@ const logVerbose = (message: string, data: any) => {
     }
 };
 
-function base64ToMime(base64: string): string {
-    const signature = base64.substring(0, 30);
-    if (signature.includes("image/jpeg")) return "image/jpeg";
-    if (signature.includes("image/png")) return "image/png";
-    if (signature.includes("image/webp")) return "image/webp";
-    return 'image/png'; // Default
-}
-
 function cleanBase64(base64: string): string {
     return base64.split(',')[1];
 }
 
 
 async function _callGemini(imageData: string, settings: AiSettings): Promise<BillData> {
-    if (!process.env.API_KEY) {
-        throw new Error("Google Gemini API key is not configured. Please set the API_KEY environment variable.");
-    }
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const imagePart = {
-        inlineData: {
-            mimeType: base64ToMime(imageData),
-            data: cleanBase64(imageData),
+    logVerbose('Calling Gemini via backend proxy...', {});
+    const response = await fetch('/api/analyze/gemini', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
         },
-    };
+        body: JSON.stringify({ imageData: imageData }),
+    });
 
-    const request = {
-        model: 'gemini-2.5-flash',
-        contents: { parts: [imagePart] },
-        config: {
-            systemInstruction: MASTER_SYSTEM_PROMPT,
-            responseMimeType: "application/json",
-            responseSchema: RESPONSE_JSON_SCHEMA,
-        },
-    };
-    logVerbose('Gemini Request:', request);
-    const response = await ai.models.generateContent(request);
-    logVerbose('Gemini Response:', response);
-
-    try {
-        const jsonText = response.text.trim();
-        return JSON.parse(jsonText);
-    } catch (e) {
-        console.error("Failed to parse Gemini JSON response:", response.text);
-        throw new Error("AI returned an invalid JSON format.");
+    if (!response.ok) {
+        const errorBody = await response.json();
+        logVerbose('Gemini Proxy Error Response:', errorBody);
+        throw new Error(errorBody.message || `Gemini analysis failed: ${response.statusText}`);
     }
+
+    const result = await response.json();
+    logVerbose('Gemini Proxy Response:', result);
+    return result;
 }
 
 async function _callOllama(imageData: string, settings: AiSettings): Promise<BillData> {
@@ -119,7 +97,7 @@ async function _callOpenAI(imageData: string, settings: AiSettings): Promise<Bil
             {
                 role: "user",
                 content: [
-                    { type: "text", text: "Analyze this utility bill image and provide the output in the specified JSON format." },
+                    { type: "text", text: "Analyze this utility bill image and provide the specified JSON output." },
                     { type: "image_url", image_url: { url: imageData } }
                 ]
             }
