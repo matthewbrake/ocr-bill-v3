@@ -1,6 +1,5 @@
 import type { AiSettings, BillData } from '../types/index';
 import { AiProvider } from '../types/index';
-import { MASTER_SYSTEM_PROMPT } from '../src/prompt';
 
 const logVerbose = (message: string, data: any) => {
     try {
@@ -50,7 +49,7 @@ async function _callOllama(imageData: string, settings: AiSettings): Promise<Bil
         format: "json",
         stream: false,
         messages: [
-            { role: "system", content: MASTER_SYSTEM_PROMPT },
+            { role: "system", content: "You are an expert OCR system for utility bills. Analyze the image and return a JSON object based on the user's request. Do not include any markdown formatting." },
             {
                 role: "user",
                 content: "Analyze this utility bill.",
@@ -93,7 +92,7 @@ async function _callOpenAI(imageData: string, settings: AiSettings): Promise<Bil
         model: "gpt-4o",
         response_format: { type: "json_object" },
         messages: [
-            { role: "system", content: MASTER_SYSTEM_PROMPT },
+            { role: "system", content: "You are an expert OCR system for utility bills. Analyze the image and return a JSON object based on the user's request. Do not include any markdown formatting." },
             {
                 role: "user",
                 content: [

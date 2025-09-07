@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 // FIX: Use explicit `Request` and `Response` types from express to avoid conflicts with global DOM types.
 // FIX: Aliased Request and Response to avoid conflicts with global DOM types
 import express, { Request as ExpressRequest, Response as ExpressResponse } from 'express';
@@ -8,12 +11,8 @@ import { fileURLToPath } from 'url';
 import { Buffer } from 'buffer';
 import type { BillData, LineItem, UsageChart, AnalysisRecord } from './types/index.js';
 import logger from './logger.js';
-import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 import { MASTER_SYSTEM_PROMPT, RESPONSE_JSON_SCHEMA } from './src/prompt.js';
-
-
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
