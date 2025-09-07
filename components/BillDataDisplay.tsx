@@ -147,20 +147,20 @@ const BillDataDisplay: React.FC<{ result: BillData, onNewAnalysis: () => void, i
                             </div>
                         )}
                         <h3 className="text-xl font-semibold border-b border-gray-600 pb-2">Account Information</h3>
-                        <EditableField label="Account Name" value={editedResult.accountName || ''} confidenceScore={editedResult.confidenceScores.accountName} onChange={(val) => handleFieldChange('accountName', val)} />
-                        <EditableField label="Account Number" value={editedResult.accountNumber} confidenceScore={editedResult.confidenceScores.accountNumber} onChange={(val) => handleFieldChange('accountNumber', val)} />
-                        <EditableField label="Service Address" value={editedResult.serviceAddress || ''} confidenceScore={editedResult.confidenceScores.serviceAddress} onChange={(val) => handleFieldChange('serviceAddress', val)} />
-                        <EditableField label="Statement Date" type="date" value={editedResult.statementDate || ''} confidenceScore={editedResult.confidenceScores.statementDate} onChange={(val) => handleFieldChange('statementDate', val)} />
+                        <EditableField label="Account Name" value={editedResult.accountName || ''} confidenceScore={editedResult.confidenceScores?.accountName} onChange={(val) => handleFieldChange('accountName', val)} />
+                        <EditableField label="Account Number" value={editedResult.accountNumber} confidenceScore={editedResult.confidenceScores?.accountNumber} onChange={(val) => handleFieldChange('accountNumber', val)} />
+                        <EditableField label="Service Address" value={editedResult.serviceAddress || ''} confidenceScore={editedResult.confidenceScores?.serviceAddress} onChange={(val) => handleFieldChange('serviceAddress', val)} />
+                        <EditableField label="Statement Date" type="date" value={editedResult.statementDate || ''} confidenceScore={editedResult.confidenceScores?.statementDate} onChange={(val) => handleFieldChange('statementDate', val)} />
                         
                         <h3 className="text-xl font-semibold border-b border-gray-600 pb-2 pt-4">Payment Summary</h3>
-                        <EditableField label="Total Current Charges" type="number" value={editedResult.totalCurrentCharges} confidenceScore={editedResult.confidenceScores.totalCurrentCharges} onChange={(val) => handleFieldChange('totalCurrentCharges', val)} />
-                        <EditableField label="Due Date" type="date" value={editedResult.dueDate} confidenceScore={editedResult.confidenceScores.dueDate} onChange={(val) => handleFieldChange('dueDate', val)} />
+                        <EditableField label="Total Current Charges" type="number" value={editedResult.totalCurrentCharges} confidenceScore={editedResult.confidenceScores?.totalCurrentCharges} onChange={(val) => handleFieldChange('totalCurrentCharges', val)} />
+                        <EditableField label="Due Date" type="date" value={editedResult.dueDate} confidenceScore={editedResult.confidenceScores?.dueDate} onChange={(val) => handleFieldChange('dueDate', val)} />
                     </div>
 
                     {/* Right Column: Usage & Line Items */}
                     <div className="lg:col-span-2 space-y-6">
                          {/* Usage Charts */}
-                        {editedResult.usageCharts.map((chart: UsageChart, index: number) => (
+                        {editedResult.usageCharts?.map((chart: UsageChart, index: number) => (
                              <div key={index} className="bg-gray-800 p-6 rounded-xl border border-gray-700">
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="text-xl font-semibold">{chart.title} ({chart.unit})</h3>
@@ -256,7 +256,7 @@ const BillDataDisplay: React.FC<{ result: BillData, onNewAnalysis: () => void, i
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {editedResult.lineItems.map((item: LineItem, index: number) => (
+                                        {editedResult.lineItems?.map((item: LineItem, index: number) => (
                                             <tr key={index} className="border-b border-gray-700">
                                                 <td className="py-3 px-4">{item.description}</td>
                                                 <td className="py-3 px-4 text-right font-mono">${item.amount.toFixed(2)}</td>

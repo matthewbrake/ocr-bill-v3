@@ -41,6 +41,14 @@ The frontend source code is organized into several key directories:
 -   **Component State (`useState`)**: The primary method for managing state within components. `App.tsx` holds the global state and passes it down to child components as props.
 -   **Local Storage**: The `useAiSettings` hook uses `localStorage` to persist the user's AI settings between browser sessions. If the server is not running, history also falls back to using `localStorage`.
 
+## Error Handling & Data Sanitization
+
+The application is designed to be resilient against inconsistent AI responses.
+
+-   **`services/aiService.ts`**: Contains a `sanitizeAiResponse` function. This is a critical step that runs after an AI response is received. It checks the raw JSON data for any missing required fields and populates them with safe, default values (e.g., an empty string or an empty array). This prevents the UI from crashing if an AI model forgets to include a field like `lineItems`.
+
+-   **`components/ErrorBoundary.tsx`**: The entire application is wrapped in a React Error Boundary. This is a failsafe component that catches any unhandled JavaScript errors that occur during rendering. Instead of showing a blank white screen, it displays a user-friendly error message, preserving the application's state and allowing for easier debugging.
+
 ## AI Interaction
 
 -   **`aiService.ts`**: This module contains the core logic for communicating with the different AI backends.

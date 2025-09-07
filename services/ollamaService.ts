@@ -23,7 +23,7 @@ interface OllamaModelDetails {
     };
 }
 
-export const getMultimodalModels = async (url: string): Promise<string[]> => {
+export const getMultimodalModels = async (url:string): Promise<string[]> => {
     try {
         const response = await fetch('/api/ollama/tags', {
             method: 'POST',
@@ -37,18 +37,13 @@ export const getMultimodalModels = async (url: string): Promise<string[]> => {
         
         const data: { models: OllamaModelDetails[] } = await response.json();
         
-        // Filter for models that are likely multimodal
-        const multimodalModels = data.models.filter(model => {
-            const family = model.details.family?.toLowerCase() || '';
-            const families = model.details.families?.map(f => f.toLowerCase()) || [];
-            
-            // Heuristics for identifying multimodal models like llava, moondream, etc.
-            return family.includes('clip') || families.includes('clip') || model.name.includes('llava') || model.name.includes('moondream');
-        });
+        // Return all models. It's better to let the user choose from a full list
+        // than to risk filtering out a valid new multimodal model.
+        if (!data.models) return [];
+        return data.models.map(model => model.name);
 
-        return multimodalModels.map(model => model.name);
     } catch (error) {
-        console.error("Failed to get Ollama multimodal models:", error);
+        console.error("Failed to get Ollama models:", error);
         return [];
     }
 };

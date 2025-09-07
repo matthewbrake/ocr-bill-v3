@@ -9,7 +9,8 @@ import Loader from './components/Loader';
 import ErrorMessage from './components/ErrorMessage';
 import Settings from './components/Settings';
 import HistoryList from './components/HistoryList';
-import { analyzeBill } from './services/aiService';
+import ErrorBoundary from './components/ErrorBoundary';
+import { analyzeBill, sanitizeAiResponse } from './services/aiService';
 
 const App: React.FC = () => {
     const { settings, setSettings, isConfigured } = useAiSettings();
@@ -108,9 +109,10 @@ const App: React.FC = () => {
         setAnalysisResult(null);
 
         try {
-            const result = await analyzeBill(imageSrc, settings);
-            setAnalysisResult(result);
-            await saveToHistory(result);
+            const rawResult = await analyzeBill(imageSrc, settings);
+            const sanitizedResult = sanitizeAiResponse(rawResult);
+            setAnalysisResult(sanitizedResult);
+            await saveToHistory(sanitizedResult);
         } catch (err: any) {
             console.error("Analysis failed:", err);
             setError(err.message || "An unknown error occurred during analysis.");
@@ -139,28 +141,30 @@ const App: React.FC = () => {
                 onHistoryClick={() => setIsHistoryOpen(true)}
             />
             <main className="w-full max-w-7xl mx-auto mt-8 flex-grow">
-                {isLoading ? (
-                    <Loader />
-                ) : error ? (
-                    <ErrorMessage message={error} onClear={() => setError(null)} />
-                ) : analysisResult ? (
-                    <BillDataDisplay result={analysisResult} onNewAnalysis={handleNewAnalysis} imageSrc={imageSrc} />
-                ) : imageSrc ? (
-                    <div className="flex flex-col items-center gap-6 p-6 bg-gray-800 rounded-xl shadow-lg">
-                        <h2 className="text-2xl font-bold text-cyan-400">Image Preview</h2>
-                        <img src={imageSrc} alt="Bill preview" className="max-w-full md:max-w-lg max-h-[60vh] rounded-lg object-contain" />
-                        <div className="flex gap-4">
-                            <button onClick={handleNewAnalysis} className="px-6 py-2 bg-gray-600 hover:bg-gray-500 rounded-md font-semibold transition-colors">
-                                Choose New Image
-                            </button>
-                            <button onClick={handleAnalyze} className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-md font-semibold transition-colors">
-                                ✨ Analyze Bill
-                            </button>
+                 <ErrorBoundary>
+                    {isLoading ? (
+                        <Loader />
+                    ) : error ? (
+                        <ErrorMessage message={error} onClear={() => setError(null)} />
+                    ) : analysisResult ? (
+                        <BillDataDisplay result={analysisResult} onNewAnalysis={handleNewAnalysis} imageSrc={imageSrc} />
+                    ) : imageSrc ? (
+                        <div className="flex flex-col items-center gap-6 p-6 bg-gray-800 rounded-xl shadow-lg">
+                            <h2 className="text-2xl font-bold text-cyan-400">Image Preview</h2>
+                            <img src={imageSrc} alt="Bill preview" className="max-w-full md:max-w-lg max-h-[60vh] rounded-lg object-contain" />
+                            <div className="flex gap-4">
+                                <button onClick={handleNewAnalysis} className="px-6 py-2 bg-gray-600 hover:bg-gray-500 rounded-md font-semibold transition-colors">
+                                    Choose New Image
+                                </button>
+                                <button onClick={handleAnalyze} className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-md font-semibold transition-colors">
+                                    ✨ Analyze Bill
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    <Welcome onImageSelected={handleImageSelected} onCameraClick={() => setIsCameraOpen(true)} />
-                )}
+                    ) : (
+                        <Welcome onImageSelected={handleImageSelected} onCameraClick={() => setIsCameraOpen(true)} />
+                    )}
+                 </ErrorBoundary>
             </main>
             {isSettingsOpen && <Settings onClose={() => setIsSettingsOpen(false)} settings={settings} onSave={setSettings} />}
             {isHistoryOpen && <HistoryList records={history} onLoad={loadFromHistory} onClear={clearHistory} onClose={() => setIsHistoryOpen(false)} />}

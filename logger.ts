@@ -9,8 +9,10 @@ if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir);
 }
 
+const logLevel = process.env.LOG_LEVEL || 'info';
+
 const logger = winston.createLogger({
-    level: 'info',
+    level: logLevel,
     format: winston.format.combine(
         winston.format.timestamp({
             format: 'YYYY-MM-DD HH:mm:ss'
@@ -33,7 +35,7 @@ if (process.env.NODE_ENV !== 'production') {
             winston.format.colorize(),
             winston.format.simple()
         ),
-        level: 'debug'
+        level: logLevel, // Also respect LOG_LEVEL for console output
     }));
 }
 

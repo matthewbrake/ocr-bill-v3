@@ -1,9 +1,9 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-// FIX: Use namespaced Request and Response types from the express default import
-// to avoid conflicts with global DOM types.
-import express from 'express';
+// FIX: Import Request and Response types directly from express to resolve type conflicts with global DOM types.
+// FIX: Using aliases for Request and Response to explicitly use Express types and prevent conflicts with global DOM types.
+import express, { Request as ExpressRequest, Response as ExpressResponse } from 'express';
 import cors from 'cors';
 import fs from 'fs/promises';
 import path from 'path';
@@ -105,9 +105,11 @@ const generateCsvContent = (data: BillData): string => {
 // --- API Routes ---
 
 // Gemini analysis proxy
-app.post('/api/analyze/gemini', async (req: express.Request, res: express.Response) => {
+// FIX: Use aliased ExpressRequest and ExpressResponse types to avoid conflict with global DOM types.
+app.post('/api/analyze/gemini', async (req: ExpressRequest, res: ExpressResponse) => {
     logger.info('Received request for /api/analyze/gemini');
     const { imageData } = req.body;
+    logger.debug('Gemini request body received.', { hasImageData: !!imageData });
     if (!imageData) {
         logger.warn('Gemini request missing image data');
         return res.status(400).json({ message: 'Missing image data' });
@@ -138,6 +140,8 @@ app.post('/api/analyze/gemini', async (req: express.Request, res: express.Respon
         };
 
         logger.info('Sending request to Gemini API...');
+        logger.debug('Gemini API Request payload:', { model: request.model, config: request.config });
+
         const response = await ai.models.generateContent(request);
         
         const jsonText = response.text?.trim();
@@ -145,9 +149,10 @@ app.post('/api/analyze/gemini', async (req: express.Request, res: express.Respon
              logger.error('Received empty response text from Gemini API.');
              throw new Error('Received empty response from Gemini API.');
         }
-
+        
         const result = JSON.parse(jsonText);
         logger.info('Successfully received and parsed response from Gemini.');
+        logger.debug('Full Gemini Parsed JSON Response:', { result });
         res.json(result);
 
     } catch (error: any) {
@@ -157,9 +162,12 @@ app.post('/api/analyze/gemini', async (req: express.Request, res: express.Respon
 });
 
 // Ollama analysis proxy
-app.post('/api/analyze/ollama', async (req: express.Request, res: express.Response) => {
+// FIX: Use aliased ExpressRequest and ExpressResponse types to avoid conflict with global DOM types.
+app.post('/api/analyze/ollama', async (req: ExpressRequest, res: ExpressResponse) => {
     logger.info('Received request for /api/analyze/ollama (proxy)');
     const { imageData, settings } = req.body;
+    logger.debug('Ollama request body received.', { hasImageData: !!imageData, settings });
+    
     if (!imageData || !settings) {
         logger.warn('Ollama proxy request missing image or settings');
         return res.status(400).json({ message: 'Missing image data or AI settings' });
@@ -176,10 +184,10 @@ app.post('/api/analyze/ollama', async (req: express.Request, res: express.Respon
         format: "json",
         stream: false,
         messages: [
-            { role: "system", content: "You are an expert OCR system for utility bills. Analyze the image and return a JSON object based on the user's request. Do not include any markdown formatting." },
+            { role: "system", content: MASTER_SYSTEM_PROMPT },
             {
                 role: "user",
-                content: "Analyze this utility bill.",
+                content: "Analyze this utility bill image and provide the specified JSON output.",
                 images: [cleanBase64(imageData)]
             }
         ]
@@ -187,6 +195,7 @@ app.post('/api/analyze/ollama', async (req: express.Request, res: express.Respon
 
     try {
         logger.info(`Proxying request to Ollama server at ${serverUrl} for model ${model}`);
+        logger.debug('Ollama proxy payload', payload);
         const response = await fetch(`${serverUrl}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -202,19 +211,32 @@ app.post('/api/analyze/ollama', async (req: express.Request, res: express.Respon
         const responseData = await response.json();
         logger.info('Successfully received response from Ollama server.');
         
-        // The actual JSON is nested inside the response, parse and return it
-        const result = JSON.parse(responseData.message.content);
-        res.json(result);
+        // CRITICAL: Add try-catch here to handle non-JSON responses from non-vision models
+        try {
+            const result = JSON.parse(responseData.message.content);
+            logger.debug('Full Ollama Parsed JSON Response:', { result });
+            if (!result.accountNumber) {
+                 logger.warn("Ollama response was missing 'accountNumber'. The model might not be suitable for this task or failed to extract it.");
+            }
+            res.json(result);
+        } catch (parseError) {
+             logger.error('Failed to parse JSON content from Ollama response. The model may not support JSON mode or image analysis.', { 
+                message: (parseError as Error).message,
+                content: responseData.message.content 
+            });
+            throw new Error('The AI model returned a response in an unexpected format. Please ensure you are using a multimodal model (like llava) capable of processing images and generating JSON.');
+        }
 
     } catch (error: any) {
         logger.error('Error proxying request to Ollama:', { message: error.message, stack: error.stack });
-        res.status(500).json({ message: `Failed to connect or get a valid response from Ollama server at ${serverUrl}. Please check if it's running and accessible.` });
+        res.status(500).json({ message: error.message || `Failed to connect or get a valid response from Ollama server at ${serverUrl}. Please check if it's running and accessible.` });
     }
 });
 
 
 // History endpoints
-app.get('/api/history', async (req: express.Request, res: express.Response) => {
+// FIX: Use aliased ExpressRequest and ExpressResponse types to avoid conflict with global DOM types.
+app.get('/api/history', async (req: ExpressRequest, res: ExpressResponse) => {
     logger.info('GET /api/history');
     try {
         const historyData = await fs.readFile(HISTORY_FILE, 'utf-8');
@@ -231,9 +253,11 @@ app.get('/api/history', async (req: express.Request, res: express.Response) => {
     }
 });
 
-app.post('/api/history', async (req: express.Request, res: express.Response) => {
+// FIX: Use aliased ExpressRequest and ExpressResponse types to avoid conflict with global DOM types.
+app.post('/api/history', async (req: ExpressRequest, res: ExpressResponse) => {
     logger.info('POST /api/history');
     const { data, imageSrc } = req.body;
+    logger.debug('POST /api/history body', { hasData: !!data, hasImage: !!imageSrc });
     if (!data || !imageSrc) {
         return res.status(400).json({ message: 'Missing data or imageSrc' });
     }
@@ -263,7 +287,8 @@ app.post('/api/history', async (req: express.Request, res: express.Response) => 
         const updatedHistory = [newRecord, ...history].slice(0, 50);
         await fs.writeFile(HISTORY_FILE, JSON.stringify(updatedHistory, null, 2));
 
-        logger.info(`Saved new history record ${newRecord.id} for account ${data.accountNumber}`);
+        logger.info(`Saved new history record ${newRecord.id} for account: ${data.accountNumber || 'N/A'}`);
+        logger.debug('New history record data:', newRecord);
         res.status(201).json(newRecord);
     } catch (error) {
         logger.error('Error saving history:', error);
@@ -271,7 +296,8 @@ app.post('/api/history', async (req: express.Request, res: express.Response) => 
     }
 });
 
-app.delete('/api/history', async (req: express.Request, res: express.Response) => {
+// FIX: Use aliased ExpressRequest and ExpressResponse types to avoid conflict with global DOM types.
+app.delete('/api/history', async (req: ExpressRequest, res: ExpressResponse) => {
     logger.info('DELETE /api/history');
     try {
         await fs.writeFile(HISTORY_FILE, JSON.stringify([]));
@@ -288,9 +314,11 @@ app.delete('/api/history', async (req: express.Request, res: express.Response) =
 });
 
 // CSV Export endpoint
-app.post('/api/save-analysis', async (req: express.Request, res: express.Response) => {
+// FIX: Use aliased ExpressRequest and ExpressResponse types to avoid conflict with global DOM types.
+app.post('/api/save-analysis', async (req: ExpressRequest, res: ExpressResponse) => {
     logger.info('POST /api/save-analysis');
     const data: BillData = req.body;
+    logger.debug('POST /api/save-analysis body', { data });
     if (!data) {
         return res.status(400).json({ message: 'Missing bill data' });
     }
@@ -313,7 +341,8 @@ app.post('/api/save-analysis', async (req: express.Request, res: express.Respons
 });
 
 // Ollama Service Proxy Endpoints
-app.post('/api/ollama/test', async (req: express.Request, res: express.Response) => {
+// FIX: Use aliased ExpressRequest and ExpressResponse types to avoid conflict with global DOM types.
+app.post('/api/ollama/test', async (req: ExpressRequest, res: ExpressResponse) => {
     const { url } = req.body;
     logger.info(`Proxying Ollama connection test to: ${url}`);
     if (!url) {
@@ -321,6 +350,7 @@ app.post('/api/ollama/test', async (req: express.Request, res: express.Response)
     }
     try {
         const response = await fetch(url, { method: 'GET' });
+        logger.info(`Ollama test connection to ${url} returned status ${response.status}`);
         res.status(response.status).json({ success: response.ok });
     } catch (error) {
         logger.error(`Failed to connect to Ollama at ${url}`, error);
@@ -328,7 +358,8 @@ app.post('/api/ollama/test', async (req: express.Request, res: express.Response)
     }
 });
 
-app.post('/api/ollama/tags', async (req: express.Request, res: express.Response) => {
+// FIX: Use aliased ExpressRequest and ExpressResponse types to avoid conflict with global DOM types.
+app.post('/api/ollama/tags', async (req: ExpressRequest, res: ExpressResponse) => {
     const { url } = req.body;
     logger.info(`Proxying Ollama tags request to: ${url}`);
     if (!url) {
@@ -340,6 +371,8 @@ app.post('/api/ollama/tags', async (req: express.Request, res: express.Response)
             throw new Error(`Ollama server returned status ${response.status}`);
         }
         const data = await response.json();
+        logger.info(`Successfully fetched ${data.models?.length || 0} models from Ollama at ${url}`);
+        logger.debug('Ollama tags response', { data });
         res.json(data);
     } catch (error) {
         logger.error(`Failed to fetch tags from Ollama at ${url}`, error);

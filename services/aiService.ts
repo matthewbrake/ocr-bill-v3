@@ -119,3 +119,36 @@ export const analyzeBill = async (imageData: string, settings: AiSettings): Prom
             throw new Error("Invalid AI provider selected.");
     }
 };
+
+/**
+ * Sanitizes the raw response from an AI model to ensure it conforms to the BillData interface,
+ * preventing crashes from missing or malformed data.
+ * @param rawData - The raw data object from the AI.
+ * @returns A sanitized BillData object with safe defaults.
+ */
+export const sanitizeAiResponse = (rawData: any): BillData => {
+    const sanitized: BillData = {
+        accountName: rawData.accountName || '',
+        accountNumber: rawData.accountNumber || 'N/A',
+        serviceAddress: rawData.serviceAddress || '',
+        statementDate: rawData.statementDate || '',
+        servicePeriodStart: rawData.servicePeriodStart || '',
+        servicePeriodEnd: rawData.servicePeriodEnd || '',
+        totalCurrentCharges: Number(rawData.totalCurrentCharges) || 0,
+        dueDate: rawData.dueDate || '',
+        confidenceScores: {
+            overall: rawData.confidenceScores?.overall || 0.5,
+            accountName: rawData.confidenceScores?.accountName || 0.5,
+            accountNumber: rawData.confidenceScores?.accountNumber || 0.5,
+            serviceAddress: rawData.confidenceScores?.serviceAddress || 0.5,
+            statementDate: rawData.confidenceScores?.statementDate || 0.5,
+            totalCurrentCharges: rawData.confidenceScores?.totalCurrentCharges || 0.5,
+            dueDate: rawData.confidenceScores?.dueDate || 0.5,
+        },
+        usageCharts: Array.isArray(rawData.usageCharts) ? rawData.usageCharts : [],
+        lineItems: Array.isArray(rawData.lineItems) ? rawData.lineItems : [],
+    };
+
+    logVerbose('Sanitizing AI Response', { raw: rawData, sanitized });
+    return sanitized;
+};

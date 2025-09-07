@@ -15,10 +15,11 @@ This document describes the simple yet powerful Node.js backend server built wit
 The primary purpose of the server is to:
 1.  Serve the main `index.html` file and other static assets.
 2.  Provide API endpoints for managing analysis history.
-3.  Store uploaded bill images permanently.
-4.  Save final, user-approved analysis data as CSV files.
-5.  Log all important events and errors to files for easy debugging.
-6.  Be configurable, for example, allowing the server port to be changed.
+3.  Proxy requests to AI services (Gemini, Ollama) to handle them securely and avoid client-side CORS issues.
+4.  Store uploaded bill images permanently.
+5.  Save final, user-approved analysis data as CSV files.
+6.  Log all important events and errors to files for easy debugging.
+7.  Be configurable, for example, allowing the server port to be changed.
 
 ## File-Based "Database" and Storage
 
@@ -33,28 +34,40 @@ The server uses the local file system for storage, making it easy to set up and 
 
 The server exposes the following RESTful API endpoints. All endpoints are prefixed with `/api`.
 
-### 1. History Management
+### 1. AI Analysis Proxies
 
--   **`GET /api/history`**
-    -   **Description**: Retrieves the entire analysis history.
-    -   **Response**: A JSON array of `AnalysisRecord` objects, sorted with the most recent first.
+-   **`POST /api/analyze/gemini`**: Proxies the analysis request to the Google Gemini API.
+-   **`POST /api/analyze/ollama`**: Proxies the analysis request to the user-configured Ollama server.
 
--   **`POST /api/history`**
-    -   **Description**: Saves a new analysis record. It also saves the associated bill image to the `uploads/` folder.
-    -   **Request Body**: A JSON object containing `data` (the `BillData` object) and `imageSrc` (the base64-encoded image string).
-    -   **Response**: The newly created `AnalysisRecord` object, including the server path to the saved image.
+### 2. History Management
 
--   **`DELETE /api/history`**
-    -   **Description**: Deletes all history records from `history.json` and all images from the `uploads/` folder.
-    -   **Response**: A success message.
+-   **`GET /api/history`**: Retrieves the entire analysis history.
+-   **`POST /api/history`**: Saves a new analysis record and its associated bill image.
+-   **`DELETE /api/history`**: Deletes all history records and uploaded images.
 
-### 2. CSV Export
+### 3. CSV Export
 
--   **`POST /api/save-analysis`**
-    -   **Description**: Receives the final, potentially user-edited `BillData`, generates a CSV file from it, and saves it to the `csv/` folder.
-    -   **Request Body**: A JSON object representing the `BillData`.
-    -   **Filename**: The CSV is automatically named using the format `YYYY-MM-DD-HH-MM-SS_account-name_bill-data.csv` (e.g., `2024-05-21-14-30-00_john_doe_bill-data.csv`).
-    -   **Response**: A success message indicating the filename of the saved CSV.
+-   **`POST /api/save-analysis`**: Generates and saves a CSV file from the final bill data.
+
+### 4. Ollama Utilities
+
+-   **`POST /api/ollama/test`**: Proxies a connection test to an Ollama server URL.
+-   **`POST /api/ollama/tags`**: Proxies a request to get the list of available models from an Ollama server.
+
+## Logging and Debugging
+
+The server is configured with a powerful logger to help you understand what's happening.
+
+-   **Log File Location**: All server activity is recorded in the `logs/` directory at the root of the project.
+    -   `logs/server.log`: Contains all informational messages, such as which API endpoints are being hit.
+    -   `logs/error.log`: Contains only error messages, making it easy to spot problems.
+
+-   **Verbose Mode**: For more detailed troubleshooting, you can run the server in a high-verbosity "debug" mode. This will print much more information to your terminal and the log files.
+    -   **Most importantly, it will log the entire JSON payload received from the AI model.** This is essential for debugging why an analysis might be failing or returning incomplete data.
+    -   To use verbose mode, start the server with this command:
+    ```bash
+    npm run dev:verbose
+    ```
 
 ## How to Run
 

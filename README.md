@@ -4,7 +4,7 @@
 
 The AI Bill Analyzer is a modern web application designed to simplify understanding and managing utility bills. Users can upload an image of a bill or use their device's camera to capture one. The application then leverages a powerful multimodal AI model to perform Optical Character Recognition (OCR) and data extraction, presenting the information in a structured, editable, and visual format.
 
-This project is built with React, TypeScript, and Tailwind CSS, and supports multiple AI backends including Google Gemini, local Ollama models, and OpenAI.
+This project is built with React, TypeScript, and Tailwind CSS. It is highly resilient, able to gracefully handle inconsistent AI model outputs, and supports multiple AI backends including Google Gemini, local Ollama models, and OpenAI.
 
 ## 2. Key Features
 
@@ -12,7 +12,8 @@ This project is built with React, TypeScript, and Tailwind CSS, and supports mul
 -   **Clear Information**: Understand charges, usage, and key dates at a glance with an intuitive UI.
 -   **Track Consumption**: Visualize historical usage data extracted from charts on the bill.
 -   **Editable Charts & Low-Confidence Flags**: Correct any AI extraction errors directly. The app automatically highlights individual fields and chart bars the AI was uncertain about, prompting you to verify them.
--   **Persistent History & Logging**: A robust Node.js server saves all analysis results, bill images, and exported CSVs. All server actions and errors are recorded in log files for easy debugging.
+-   **Robust Error Handling**: The frontend is fortified against crashes from unexpected AI responses, ensuring a stable user experience.
+-   **Persistent History & Advanced Logging**: A robust Node.js server saves all analysis results, bill images, and exported CSVs. All server actions and errors are recorded in detailed log files, with a verbose mode for deep debugging.
 -   **Data Portability**: Export extracted data to a server-side CSV folder for permanent records or submit it to a webhook via Formspree.
 -   **Privacy & Control**: When not using the server, API keys and analysis history are stored locally in the browser.
 -   **Flexible AI Backend**: Easily switch between Google Gemini, a local Ollama instance, or OpenAI.
@@ -47,10 +48,7 @@ If you are using a development server like Vite or running the Node.js server, t
     -   Open the `.env` file and add your keys. You can get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
     ```env
     # Required for Gemini provider
-    VITE_GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
-
-    # Required for OpenAI provider (optional)
-    VITE_OPENAI_API_KEY=""
+    API_KEY="YOUR_GEMINI_API_KEY_HERE"
 
     # Optional: For the "Submit Form" button (sends data to an email via Formspree)
     VITE_FORMSPREE_FORM_ID=""
@@ -78,8 +76,12 @@ This single command starts both the frontend compiler (which watches for your ch
 ```bash
 npm run dev
 ```
+For more detailed logging, which is extremely helpful for debugging AI responses, run in verbose mode:
+```bash
+npm run dev:verbose
+```
 
-The server will start, and you will see a message like `AI Bill Analyzer server running at http://localhost:4000`. Keep this terminal open while you use the app. To run on a different port, set the `PORT` variable in your `.env` file or run: `PORT=8080 npm run dev`.
+The server will start, and you will see a message like `AI Bill Analyzer server running at http://localhost:4000`. Keep this terminal open while you use the app.
 
 **B) For Production (Stable & Performant)**
 This two-step process first compiles all the frontend and backend code into an optimized `dist/` folder and then runs it.
@@ -96,4 +98,4 @@ The same `server running...` message will appear. You can also specify the port 
 **Step 3: Launch the App**
 Open your web browser and navigate to the URL from the terminal (e.g., `http://localhost:4000`).
     
-**Step 4: Use the App**: Your analysis history will now be saved on the server in `history.json`. Images will be stored in the `uploads/` folder, exported CSVs in the `csv/` folder, and all server logs will be in the `logs/` folder.
+**Step 4: Use the App**: Your analysis history will now be saved on the server in `history.json`. Images will be stored in the `uploads/` folder, exported CSVs in the `csv/` folder, and all server logs will be in the `logs/` folder. For a detailed walkthrough of the application's features, see `GUIDE/05-Application-Flow.md`.
