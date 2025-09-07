@@ -6,9 +6,7 @@ export enum AiProvider {
 
 export interface AiSettings {
   provider: AiProvider;
-  gemini: {
-    apiKey: string;
-  };
+  gemini: {};
   ollama: {
     serverUrl: string;
     model: string;

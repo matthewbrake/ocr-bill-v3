@@ -11,7 +11,9 @@
     "sourceMap": true
   },
   "include": [
-    "**/*.ts"
+    "server.ts",
+    "logger.ts",
+    "types/index.ts"
   ],
   "exclude": [
     "node_modules"

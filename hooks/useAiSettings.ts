@@ -38,7 +38,8 @@ export const useAiSettings = () => {
     const isConfigured = useMemo(() => {
         switch (settings.provider) {
             case AiProvider.GEMINI:
-                return !!settings.gemini.apiKey;
+                // Assume configured, as the API key comes from environment variables.
+                return true;
             case AiProvider.OLLAMA:
                 return !!settings.ollama.serverUrl && !!settings.ollama.model;
             case AiProvider.OPENAI:

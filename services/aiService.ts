@@ -28,10 +28,10 @@ function cleanBase64(base64: string): string {
 
 
 async function _callGemini(imageData: string, settings: AiSettings): Promise<BillData> {
-    if (!settings.gemini.apiKey) {
-        throw new Error("Google Gemini API key is not configured.");
+    if (!process.env.API_KEY) {
+        throw new Error("Google Gemini API key is not configured. Please set the API_KEY environment variable.");
     }
-    const ai = new GoogleGenAI({ apiKey: settings.gemini.apiKey });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const imagePart = {
         inlineData: {
             mimeType: base64ToMime(imageData),
@@ -40,7 +40,6 @@ async function _callGemini(imageData: string, settings: AiSettings): Promise<Bil
     };
 
     const request = {
-        // FIX: Per coding guidelines, use 'gemini-2.5-flash' instead of prohibited 'gemini-1.5-flash'.
         model: 'gemini-2.5-flash',
         contents: { parts: [imagePart] },
         config: {
