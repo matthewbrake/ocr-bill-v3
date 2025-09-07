@@ -50,7 +50,7 @@ The application is now managed by a set of simple npm scripts.
 
 **Option A: Development Mode (Recommended)**
 
-This mode is best for testing and making code changes. It starts a file watcher for the frontend that automatically rebuilds the app when you save a file, and it starts the backend server with `nodemon`, which automatically restarts it when you change server code.
+This single command starts a complete development environment: the frontend compiler (which watches for your changes), the backend TypeScript compiler, and the server itself. The server will automatically restart whenever you save a change to a backend file. This is the only command you need for development.
 
 1.  In your terminal, from the project's root directory, run:
     ```bash

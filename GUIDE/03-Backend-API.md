@@ -58,9 +58,16 @@ The server exposes the following RESTful API endpoints. All endpoints are prefix
 
 ## How to Run
 
-The server can be run in two modes:
+The server is designed to be run as part of the complete development or production environment using the scripts in `package.json`.
 
-1.  **Development**: `npm run server` - Uses `nodemon` to watch for file changes and restart automatically.
-2.  **Production**: `npm run build` followed by `npm start` - Compiles the server to JavaScript and runs the optimized version.
+1.  **Development**: `npm run dev`
+    -   This is the **recommended command for development**.
+    -   It uses `concurrently` to run three processes at once:
+        -   The frontend `esbuild` compiler in watch mode.
+        -   The backend `tsc` TypeScript compiler in watch mode.
+        -   `nodemon`, which watches for compiled JavaScript files in the `dist/` folder and automatically restarts the server when they change.
+
+2.  **Production**: `npm run build` followed by `npm start`
+    -   This is the standard way to run in production. It compiles the server to optimized JavaScript and then runs the output file directly with Node.js.
 
 The server runs on port 4000 by default, but this can be changed by setting a `PORT` environment variable (e.g., in a `.env` file).
